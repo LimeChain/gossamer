@@ -39,6 +39,16 @@ func NewTestInstanceWithTrie(t *testing.T, targetRuntime string, tt *trie.Trie) 
 	return r
 }
 
+func NewLocalTestInstanceWithTrie(t *testing.T, runtimeFilepath string, tt *trie.Trie) *Instance {
+	t.Helper()
+
+	cfg := setupConfig(t, tt, DefaultTestLogLvl, common.NoNetworkRole, runtimeFilepath)
+
+	r, err := NewInstanceFromFile(runtimeFilepath, cfg)
+	require.NoError(t, err)
+	return r
+}
+
 func setupConfig(t *testing.T, tt *trie.Trie, lvl log.Level,
 	role common.Roles, targetRuntime string) Config {
 	t.Helper()
