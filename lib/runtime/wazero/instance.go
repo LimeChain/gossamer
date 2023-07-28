@@ -445,6 +445,19 @@ func (i *Instance) Exec(function string, data []byte) (result []byte, err error)
 	i.Lock()
 	defer i.Unlock()
 
+	var DebugMemory = false
+	DebugBufferSize := uint32(32 * 1024)
+	// DebugHeapSize := uint32(2 * 1024)
+	const DataEnd = uint32(113040) // global end
+	const BssBase = uint32(111600)
+	const DataBase = uint32(107496)
+	const RoDataBase = uint32(65536) // global start / stack top
+	const StackBase = uint32(65392)  // stack ptr
+
+	if DebugMemory {
+		fmt.Println("====================================")
+	}
+
 	dataLength := uint32(len(data))
 	inputPtr, err := i.Context.Allocator.Allocate(dataLength)
 	if err != nil {
@@ -470,6 +483,25 @@ func (i *Instance) Exec(function string, data []byte) (result []byte, err error)
 
 	ctx := context.WithValue(context.Background(), runtimeContextKey, i.Context)
 
+	var debugStart uint32
+	if DebugMemory {
+		memBytes, _ := mem.Read(uint32(inputPtr), uint32(inputPtr+dataLength))
+		fmt.Println("outter allocated memory: before execution: ", memBytes)
+
+		debugStartFunc := i.Module.ExportedFunction("_debug_buf")
+		if debugStartFunc == nil {
+			return nil, fmt.Errorf("%w: %s", ErrExportFunctionNotFound, "_debug_buf")
+		}
+		values, err := debugStartFunc.Call(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("running _debug_buf function: %w", err)
+		}
+		if len(values) == 0 {
+			return nil, fmt.Errorf("no returned values from runtime function: %s", function)
+		}
+		debugStart = uint32(values[0])
+	}
+
 	values, err := runtimeFunc.Call(ctx, api.EncodeU32(inputPtr), api.EncodeU32(dataLength))
 	if err != nil {
 		return nil, fmt.Errorf("running runtime function: %w", err)
@@ -478,6 +510,35 @@ func (i *Instance) Exec(function string, data []byte) (result []byte, err error)
 		return nil, fmt.Errorf("no returned values from runtime function: %s", function)
 	}
 	wasmValue := values[0]
+
+	if DebugMemory {
+		// fmt.Println("outter allocated memory: after execution: ", memory[inputPtr:inputPtr+dataLength])
+
+		// fmt.Printf("\n --------- Before Stack: [%d - %d] --------- \n", 0, StackBase)
+		// fmt.Printf("%s\n", memory[0:StackBase])
+
+		// fmt.Printf("\n --------- Stack Pointer: [%d - %d] --------- \n", StackBase, RoDataBase)
+		// fmt.Printf("%s\n", memory[StackBase:RoDataBase])
+
+		// fmt.Printf("\n --------- Ro Data: [%d - %d] --------- \n", RoDataBase, DataBase)
+		// fmt.Printf("%s\n", memory[RoDataBase:DataBase])
+
+		// fmt.Printf("\n --------- .Data: [%d - %d] --------- \n", DataBase, BssBase)
+		// fmt.Printf("%s\n", memory[DataBase:BssBase])
+
+		// fmt.Printf("\n --------- .Bss (zero globals): [%d - %d] --------- \n", BssBase, DataEnd)
+		// fmt.Printf("%s\n", memory[BssBase:DataEnd])
+
+		// fmt.Printf("\n --------- Before Heap Base: [%d - %d] --------- \n", DataEnd, runtime.DefaultHeapBase)
+		// fmt.Printf("%d\n", memory[DataEnd:runtime.DefaultHeapBase])
+
+		// fmt.Printf("\n --------- Allocator Heap Base [%d : %d] --------- \n", runtime.DefaultHeapBase, runtime.DefaultHeapBase+DebugHeapSize)
+		// fmt.Printf("%d\n", memory[runtime.DefaultHeapBase:runtime.DefaultHeapBase+DebugHeapSize])
+
+		fmt.Printf("\n --------- Debug Buffer: [%d - %d] --------- \n", debugStart, debugStart+DebugBufferSize)
+		memBytes, _ := mem.Read(debugStart, debugStart+DebugBufferSize+128)
+		fmt.Printf("%s\n", memBytes)
+	}
 
 	outputPtr, outputLength := splitPointerSize(wasmValue)
 	result, ok = mem.Read(outputPtr, outputLength)
