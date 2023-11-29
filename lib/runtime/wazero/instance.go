@@ -107,7 +107,7 @@ func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
 
 	_, err = rt.NewHostModuleBuilder("env").
 		// values from newer kusama/polkadot runtimes
-		ExportMemory("memory", 23).
+		ExportMemory("memory", 23). // allocator.MaxWasmPages-1
 		NewFunctionBuilder().
 		WithFunc(ext_logging_log_version_1).
 		Export("ext_logging_log_version_1").
@@ -461,6 +461,46 @@ func (i *Instance) Exec(function string, data []byte) (result []byte, err error)
 	if !ok {
 		panic("write overflow")
 	}
+
+	// ---
+
+	// runtimeStartFunc := i.Module.ExportedFunction("_start")
+	// if runtimeStartFunc == nil {
+	// 	return nil, fmt.Errorf("%w: %s", ErrExportFunctionNotFound, "_start")
+	// }
+
+	// ctxStart := context.WithValue(context.Background(), runtimeContextKey, i.Context)
+
+	// _, err = runtimeStartFunc.Call(ctxStart)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("running runtime function: %w", err)
+	// }
+
+	// --- debug buffer ---
+
+	// runtimeDebugBufFunc := i.Module.ExportedFunction("_debug_buf")
+	// if runtimeDebugBufFunc == nil {
+	// 	return nil, fmt.Errorf("%w: %s", ErrExportFunctionNotFound, "_debug_buf")
+	// }
+
+	// ctxDebugBuf := context.WithValue(context.Background(), runtimeContextKey, i.Context)
+
+	// valuesDebugBuf, err := runtimeDebugBufFunc.Call(ctxDebugBuf)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("running runtime function: %w", err)
+	// }
+	// if len(valuesDebugBuf) == 0 {
+	// 	return nil, fmt.Errorf("no returned values from runtime function: %s", "_debug_buf")
+	// }
+
+	// buf, ok := mem.Read(splitPointerSize(valuesDebugBuf[0]))
+	// fmt.Printf("%s\n", buf)
+
+	// if !ok {
+	// 	panic("write overflow")
+	// }
+
+	// --- debug buffer ---
 
 	runtimeFunc := i.Module.ExportedFunction(function)
 	if runtimeFunc == nil {

@@ -454,6 +454,7 @@ func (f *FreeingBumpHeapAllocator) Allocate(mem runtime.Memory, size uint32) (pt
 // - `mem` - a slice representing the linear memory on which this allocator operates.
 // - `ptr` - pointer to the allocated chunk
 func (f *FreeingBumpHeapAllocator) Deallocate(mem runtime.Memory, ptr uint32) (err error) {
+	// fmt.Printf("Deallocate: %d\n", ptr)
 	if f.poisoned {
 		return ErrAllocatorPoisoned
 	}
