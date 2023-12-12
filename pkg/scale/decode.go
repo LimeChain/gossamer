@@ -108,6 +108,13 @@ type decodeState struct {
 }
 
 func (ds *decodeState) unmarshal(dstv reflect.Value) (err error) {
+	// var in interface{}
+
+	// if dstv.Kind() == reflect.Interface {
+	// 	in = dstv
+	// } else {
+	// 	in = dstv.Interface()
+	// }
 	in := dstv.Interface()
 	switch in.(type) {
 	case *big.Int:
@@ -126,10 +133,10 @@ func (ds *decodeState) unmarshal(dstv reflect.Value) (err error) {
 		err = ds.decodeBool(dstv)
 	case Result:
 		err = ds.decodeResult(dstv)
-	case VaryingDataType:
-		err = ds.decodeVaryingDataType(dstv)
-	case VaryingDataTypeSlice:
-		err = ds.decodeVaryingDataTypeSlice(dstv)
+	// case VaryingDataType:
+	// 	err = ds.decodeVaryingDataType(dstv)
+	// case VaryingDataTypeSlice:
+	// 	err = ds.decodeVaryingDataTypeSlice(dstv)
 	default:
 		t := reflect.TypeOf(in)
 		switch t.Kind() {
@@ -140,16 +147,20 @@ func (ds *decodeState) unmarshal(dstv reflect.Value) (err error) {
 		case reflect.Ptr:
 			err = ds.decodePointer(dstv)
 		case reflect.Struct:
-			ok := reflect.ValueOf(in).CanConvert(reflect.TypeOf(VaryingDataType{}))
-			if ok {
-				err = ds.decodeCustomVaryingDataType(dstv)
-			} else {
-				err = ds.decodeStruct(dstv)
-			}
+			// ok := reflect.ValueOf(in).CanConvert(reflect.TypeOf(VaryingDataType{}))
+			// if ok {
+			// 	err = ds.decodeCustomVaryingDataType(dstv)
+			// } else {
+			err = ds.decodeStruct(dstv)
+			// }
 		case reflect.Array:
 			err = ds.decodeArray(dstv)
 		case reflect.Slice:
-			err = ds.decodeSlice(dstv)
+			if reflect.ValueOf(in).Type().Name() == "VaryingData" { // our VaryingData type representation
+				err = ds.decodeArray(dstv)
+			} else {
+				err = ds.decodeSlice(dstv)
+			}
 		case reflect.Map:
 			err = ds.decodeMap(dstv)
 		default:
@@ -404,21 +415,50 @@ func (ds *decodeState) decodeSlice(dstv reflect.Value) (err error) {
 	if err != nil {
 		return
 	}
-	in := dstv.Interface()
-	temp := reflect.New(reflect.ValueOf(in).Type())
-	for i := uint(0); i < l; i++ {
-		tempElemType := reflect.TypeOf(in).Elem()
+
+	elemType := dstv.Type().Elem()
+
+	if elemType.Kind() == reflect.Interface {
+		return ds.decodeInterfaceSlice(dstv, int(l))
+	} else {
+		return ds.decodeNonInterfaceSlice(dstv, l)
+	}
+}
+
+func (ds *decodeState) decodeInterfaceSlice(dstv reflect.Value, length int) error {
+	for i := 0; i < length; i++ {
+		elem := dstv.Index(i)
+
+		if elem.IsNil() {
+			continue
+		}
+
+		concreteType := elem.Elem().Type()
+		newElem := reflect.New(concreteType).Elem()
+		if err := ds.unmarshal(newElem); err != nil {
+			return fmt.Errorf("unmarshal error at index %d: %w", i, err)
+		}
+		elem.Set(newElem)
+	}
+	return nil
+}
+
+func (ds *decodeState) decodeNonInterfaceSlice(dstv reflect.Value, length uint) error {
+	sliceType := dstv.Type()
+	tempSlice := reflect.MakeSlice(sliceType, 0, int(length))
+
+	for i := uint(0); i < length; i++ {
+		tempElemType := sliceType.Elem()
 		tempElem := reflect.New(tempElemType).Elem()
 
-		err = ds.unmarshal(tempElem)
+		err := ds.unmarshal(tempElem)
 		if err != nil {
-			return
+			return fmt.Errorf("decoding element %d of %d: %w", i+1, length, err)
 		}
-		temp.Elem().Set(reflect.Append(temp.Elem(), tempElem))
+		tempSlice = reflect.Append(tempSlice, tempElem)
 	}
-	dstv.Set(temp.Elem())
-
-	return
+	dstv.Set(tempSlice)
+	return nil
 }
 
 func (ds *decodeState) decodeArray(dstv reflect.Value) (err error) {
