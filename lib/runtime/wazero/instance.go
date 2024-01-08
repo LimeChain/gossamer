@@ -387,6 +387,33 @@ func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
 		NewFunctionBuilder().
 		WithFunc(ext_storage_commit_transaction_version_1).
 		Export("ext_storage_commit_transaction_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_current_time_version_1).
+		Export("ext_benchmarking_current_time_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_set_whitelist_version_1).
+		Export("ext_benchmarking_set_whitelist_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_reset_read_write_count_version_1).
+		Export("ext_benchmarking_reset_read_write_count_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_start_db_tracker_version_1).
+		Export("ext_benchmarking_start_db_tracker_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_stop_db_tracker_version_1).
+		Export("ext_benchmarking_stop_db_tracker_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_wipe_db_version_1).
+		Export("ext_benchmarking_wipe_db_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_commit_db_version_1).
+		Export("ext_benchmarking_commit_db_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_db_read_count_version_1).
+		Export("ext_benchmarking_db_read_count_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_db_write_count_version_1).
+		Export("ext_benchmarking_db_write_count_version_1").
 		Instantiate(ctx)
 
 	if err != nil {
