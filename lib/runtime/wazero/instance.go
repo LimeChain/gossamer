@@ -403,17 +403,23 @@ func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
 		WithFunc(ext_benchmarking_stop_db_tracker_version_1).
 		Export("ext_benchmarking_stop_db_tracker_version_1").
 		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_db_read_count_version_1).
+		Export("ext_benchmarking_db_read_count_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_db_write_count_version_1).
+		Export("ext_benchmarking_db_write_count_version_1").
+		NewFunctionBuilder().
 		WithFunc(ext_benchmarking_wipe_db_version_1).
 		Export("ext_benchmarking_wipe_db_version_1").
 		NewFunctionBuilder().
 		WithFunc(ext_benchmarking_commit_db_version_1).
 		Export("ext_benchmarking_commit_db_version_1").
 		NewFunctionBuilder().
-		WithFunc(ext_benchmarking_db_read_count_version_1).
-		Export("ext_benchmarking_db_read_count_version_1").
+		WithFunc(ext_benchmarking_store_snapshot_db_version_1).
+		Export("ext_benchmarking_store_snapshot_db_version_1").
 		NewFunctionBuilder().
-		WithFunc(ext_benchmarking_db_write_count_version_1).
-		Export("ext_benchmarking_db_write_count_version_1").
+		WithFunc(ext_benchmarking_restore_snapshot_db_version_1).
+		Export("ext_benchmarking_restore_snapshot_db_version_1").
 		Instantiate(ctx)
 
 	if err != nil {

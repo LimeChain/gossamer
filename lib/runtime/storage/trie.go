@@ -167,10 +167,11 @@ func (tr *KeyTracker) addWriteKey(key string) {
 // TrieState is a wrapper around a transient trie that is used during the course of executing some runtime call.
 // If the execution of the call is successful, the trie will be saved in the StorageState.
 type TrieState struct {
-	t          *trie.Trie
-	oldTrie    *trie.Trie // this is the trie before BeginStorageTransaction is called. set to nil if it isn't called
-	lock       sync.RWMutex
-	keyTracker KeyTracker
+	t             *trie.Trie
+	oldTrie       *trie.Trie // this is the trie before BeginStorageTransaction is called. set to nil if it isn't called
+	lock          sync.RWMutex
+	duplicateTrie *trie.Trie
+	keyTracker    KeyTracker
 }
 
 func (s *TrieState) DbWhitelistKey(key string) {
@@ -191,15 +192,19 @@ func (s *TrieState) DbStopTracker() {
 	s.keyTracker.Disable()
 }
 
+func (s *TrieState) DbReadCount() uint32 {
+	return s.keyTracker.Reads()
+}
+
+func (s *TrieState) DbWriteCount() uint32 {
+	return s.keyTracker.Writes()
+}
+
 func (s *TrieState) DbWipe() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	// TODO: there is no caching layer
 	// changes (commited + reverted) from the overlay/cache are commited once per block
-	// if s.oldTrie != nil {
-	// 	s.t = s.oldTrie
-	// 	s.oldTrie = nil
-	// }
 }
 
 func (s *TrieState) DbCommit() {
@@ -207,15 +212,19 @@ func (s *TrieState) DbCommit() {
 	defer s.lock.Unlock()
 	// TODO: there is no caching layer
 	// changes (commited + reverted) from the overlay/cache are commited once per block
-	s.oldTrie = nil
 }
 
-func (s *TrieState) DbReadCount() uint32 {
-	return s.keyTracker.Reads()
+func (s *TrieState) DbStoreSnapshot() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.duplicateTrie = s.t
+	s.t = s.t.Snapshot()
 }
 
-func (s *TrieState) DbWriteCount() uint32 {
-	return s.keyTracker.Writes()
+func (s *TrieState) DbRestoreSnapshot() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.t = s.duplicateTrie.DeepCopy()
 }
 
 // NewTrieState returns a new TrieState with the given trie

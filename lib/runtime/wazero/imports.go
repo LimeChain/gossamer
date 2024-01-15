@@ -2417,6 +2417,24 @@ func ext_benchmarking_commit_db_version_1(ctx context.Context, m api.Module) {
 	storage.DbCommit()
 }
 
+func ext_benchmarking_store_snapshot_db_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbStoreSnapshot()
+}
+
+func ext_benchmarking_restore_snapshot_db_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbRestoreSnapshot()
+}
+
 func ext_benchmarking_db_read_count_version_1(ctx context.Context, m api.Module) uint32 {
 	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
 	if rtCtx == nil {

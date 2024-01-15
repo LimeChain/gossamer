@@ -15,10 +15,12 @@ type Storage interface {
 	DbResetTracker()
 	DbStartTracker()
 	DbStopTracker()
-	DbWipe()
-	DbCommit()
 	DbReadCount() uint32
 	DbWriteCount() uint32
+	DbWipe()
+	DbCommit()
+	DbStoreSnapshot()
+	DbRestoreSnapshot()
 
 	Put(key []byte, value []byte) (err error)
 	Get(key []byte) []byte
