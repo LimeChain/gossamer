@@ -11,6 +11,17 @@ import (
 
 // Storage runtime interface.
 type Storage interface {
+	DbWhitelistKey(string)
+	DbResetTracker()
+	DbStartTracker()
+	DbStopTracker()
+	DbReadCount() uint32
+	DbWriteCount() uint32
+	DbWipe()
+	DbCommit()
+	DbStoreSnapshot()
+	DbRestoreSnapshot()
+
 	Put(key []byte, value []byte) (err error)
 	Get(key []byte) []byte
 	Root() (common.Hash, error)

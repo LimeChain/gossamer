@@ -68,12 +68,61 @@ func NewTestInstance(t *testing.T, targetRuntime string, opts ...TestInstanceOpt
 	targetRuntime, err := runtime.GetRuntime(context.Background(), targetRuntime)
 	require.NoError(t, err)
 
+	r, err := NewInstanceFromFile(t, targetRuntime, *cfg)
+	require.NoError(t, err)
+
+	return r
+}
+
+// NewInstanceFromFile instantiates a runtime from a .wasm file
+func NewInstanceFromFile(t *testing.T, targetRuntime string, cfg Config) (*Instance, error) {
 	// Reads the WebAssembly module as bytes.
 	// Retrieve WASM binary
 	bytes, err := os.ReadFile(filepath.Clean(targetRuntime))
 	require.NoError(t, err)
 
-	r, err := NewInstance(bytes, *cfg)
+	r, err := NewInstance(bytes, cfg)
 	require.NoError(t, err)
+
+	return r, err
+}
+
+func NewBenchInstanceWithTrie(b *testing.B, targetRuntime string, tt *trie.Trie) *Instance {
+	b.Helper()
+
+	ctrl := gomock.NewController(b)
+
+	cfg := setupBenchConfig(b, ctrl, tt, DefaultTestLogLvl, common.NoNetworkRole)
+	targetRuntime, err := runtime.GetRuntime(context.Background(), targetRuntime)
+	require.NoError(b, err)
+
+	bytes, err := os.ReadFile(filepath.Clean(targetRuntime))
+	require.NoError(b, err)
+
+	r, err := NewInstance(bytes, cfg)
+	require.NoError(b, err)
+
 	return r
+}
+
+func setupBenchConfig(b *testing.B, ctrl *gomock.Controller, tt *trie.Trie, lvl log.Level, role common.NetworkRole) Config {
+	b.Helper()
+
+	s := storage.NewTrieState(tt)
+
+	ns := runtime.NodeStorage{
+		LocalStorage:      runtime.NewBenchInMemoryDB(b),
+		PersistentStorage: runtime.NewBenchInMemoryDB(b),
+		BaseDB:            runtime.NewBenchInMemoryDB(b),
+	}
+
+	return Config{
+		Storage:     s,
+		Keystore:    keystore.NewGlobalKeystore(),
+		LogLvl:      lvl,
+		NodeStorage: ns,
+		Network:     new(runtime.TestRuntimeNetwork),
+		Transaction: mocks.NewMockTransactionState(ctrl),
+		Role:        role,
+	}
 }
