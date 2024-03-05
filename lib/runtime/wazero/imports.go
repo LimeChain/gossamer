@@ -2356,3 +2356,100 @@ func ext_allocator_malloc_version_1(ctx context.Context, m api.Module, size uint
 
 	return res
 }
+
+func ext_benchmarking_current_time_version_1(ctx context.Context, m api.Module) int64 {
+	return int64(time.Now().UnixNano())
+}
+
+func ext_benchmarking_set_whitelist_version_1(ctx context.Context, m api.Module, key uint64) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+
+	storageKey := read(m, key)
+
+	storage := rtCtx.Storage
+	storage.DbWhitelistKey(string(storageKey))
+}
+
+func ext_benchmarking_reset_read_write_count_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbResetTracker()
+}
+
+func ext_benchmarking_start_db_tracker_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbStartTracker()
+}
+
+func ext_benchmarking_stop_db_tracker_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbStopTracker()
+}
+
+func ext_benchmarking_wipe_db_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbWipe()
+}
+
+func ext_benchmarking_commit_db_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbCommit()
+}
+
+func ext_benchmarking_store_snapshot_db_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbStoreSnapshot()
+}
+
+func ext_benchmarking_restore_snapshot_db_version_1(ctx context.Context, m api.Module) {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	storage.DbRestoreSnapshot()
+}
+
+func ext_benchmarking_db_read_count_version_1(ctx context.Context, m api.Module) uint32 {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	return storage.DbReadCount()
+}
+
+func ext_benchmarking_db_write_count_version_1(ctx context.Context, m api.Module) uint32 {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+	storage := rtCtx.Storage
+	return storage.DbWriteCount()
+}
