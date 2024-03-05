@@ -117,7 +117,7 @@ func newRuntime(ctx context.Context,
 
 	hostCompiledModule, err := rt.NewHostModuleBuilder("env").
 		// values from newer kusama/polkadot runtimes
-		ExportMemory("memory", 23).
+		ExportMemoryWithMax("memory", 4096, 4096).
 		NewFunctionBuilder().
 		WithGoModuleFunction(api.GoModuleFunc(func(ctx context.Context, m api.Module, stack []uint64) {
 			ext_logging_log_version_1(ctx, m, api.DecodeI32(stack[0]), stack[1], stack[2])
@@ -643,6 +643,39 @@ func newRuntime(ctx context.Context,
 			stack[0] = api.EncodeU32(ext_crypto_ecdsa_generate_version_1(ctx, m, api.DecodeU32(stack[0]), stack[1]))
 		}), []api.ValueType{i32, i64}, []api.ValueType{i32}).
 		Export("ext_crypto_ecdsa_generate_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_current_time_version_1).
+		Export("ext_benchmarking_current_time_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_set_whitelist_version_1).
+		Export("ext_benchmarking_set_whitelist_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_reset_read_write_count_version_1).
+		Export("ext_benchmarking_reset_read_write_count_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_start_db_tracker_version_1).
+		Export("ext_benchmarking_start_db_tracker_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_stop_db_tracker_version_1).
+		Export("ext_benchmarking_stop_db_tracker_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_db_read_count_version_1).
+		Export("ext_benchmarking_db_read_count_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_db_write_count_version_1).
+		Export("ext_benchmarking_db_write_count_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_wipe_db_version_1).
+		Export("ext_benchmarking_wipe_db_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_commit_db_version_1).
+		Export("ext_benchmarking_commit_db_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_store_snapshot_db_version_1).
+		Export("ext_benchmarking_store_snapshot_db_version_1").
+		NewFunctionBuilder().
+		WithFunc(ext_benchmarking_restore_snapshot_db_version_1).
+		Export("ext_benchmarking_restore_snapshot_db_version_1").
 		Compile(ctx)
 
 	if err != nil {
