@@ -52,9 +52,17 @@ func (tsk *TrackedStorageKey) AddRead() {
 	tsk.Reads += 1
 }
 
+func (tsk *TrackedStorageKey) SetReads(count uint32) {
+	tsk.Reads = count
+}
+
 // Add a storage write to this key.
 func (tsk *TrackedStorageKey) AddWrite() {
 	tsk.Writes += 1
+}
+
+func (tsk *TrackedStorageKey) SetWrites(count uint32) {
+	tsk.Writes = count
 }
 
 // Whitelist this key.
@@ -135,7 +143,7 @@ func (tr *KeyTracker) Writes() uint32 {
 	return sum
 }
 
-func (tr *KeyTracker) addReadKey(key string) {
+func (tr *KeyTracker) addReadKey(key string, count uint32) {
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
 
@@ -145,12 +153,16 @@ func (tr *KeyTracker) addReadKey(key string) {
 
 	sk := tr.keys[key]
 	if !sk.HasBeenRead() {
-		sk.AddRead()
+		if count > 0 {
+			sk.SetReads(count)
+		} else {
+			sk.AddRead()
+		}
 		tr.keys[key] = sk
 	}
 }
 
-func (tr *KeyTracker) addWriteKey(key string) {
+func (tr *KeyTracker) addWriteKey(key string, count uint32) {
 	tr.lock.Lock()
 	defer tr.lock.Unlock()
 
@@ -160,7 +172,11 @@ func (tr *KeyTracker) addWriteKey(key string) {
 
 	sk := tr.keys[key]
 	if !sk.HasBeenWritten() {
-		sk.AddWrite()
+		if count > 0 {
+			sk.SetWrites(count)
+		} else {
+			sk.AddWrite()
+		}
 		tr.keys[key] = sk
 	}
 }
@@ -305,7 +321,7 @@ func (t *TrieState) Snapshot() *trie.Trie {
 func (t *TrieState) Put(key, value []byte) (err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
-	t.keyTracker.addWriteKey(string(key))
+	t.keyTracker.addWriteKey(string(key), 0)
 	return t.getCurrentTrie().Put(key, value)
 }
 
@@ -313,7 +329,7 @@ func (t *TrieState) Put(key, value []byte) (err error) {
 func (t *TrieState) Get(key []byte) []byte {
 	t.mtx.RLock()
 	defer t.mtx.RUnlock()
-	t.keyTracker.addReadKey(string(key))
+	t.keyTracker.addReadKey(string(key), 0)
 	return t.getCurrentTrie().Get(key)
 }
 
@@ -347,7 +363,7 @@ func (t *TrieState) Delete(key []byte) (err error) {
 
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
-
+	t.keyTracker.addWriteKey(string(key), 0)
 	err = t.getCurrentTrie().Delete(key)
 	if err != nil {
 		return fmt.Errorf("deleting from trie: %w", err)
@@ -375,8 +391,10 @@ func (t *TrieState) ClearPrefixLimit(prefix []byte, limit uint32) (
 	deleted uint32, allDeleted bool, err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
-
-	return t.getCurrentTrie().ClearPrefixLimit(prefix, limit)
+	deletedKeys, allDeleted, err := t.getCurrentTrie().ClearPrefixLimit(prefix, limit)
+	t.keyTracker.addReadKey(string(prefix), deletedKeys)
+	t.keyTracker.addWriteKey(string(prefix), deletedKeys)
+	return deletedKeys, allDeleted, err
 }
 
 // TrieEntries returns every key-value pair in the trie
