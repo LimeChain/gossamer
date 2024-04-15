@@ -101,7 +101,7 @@ func NewInstanceFromTrie(t *trie.Trie, cfg Config) (*Instance, error) {
 
 // NewInstance instantiates a runtime from raw wasm bytecode
 func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
-	logger.Info("instantiating a runtime!")
+	// logger.Info("instantiating a runtime!")
 	logger.Patch(log.SetLevel(cfg.LogLvl), log.SetCallerFunc(true))
 
 	ctx := context.Background()
