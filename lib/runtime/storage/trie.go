@@ -11,15 +11,236 @@ import (
 	"sync"
 
 	"github.com/ChainSafe/gossamer/lib/common"
-	"github.com/ChainSafe/gossamer/lib/trie"
+	"github.com/ChainSafe/gossamer/pkg/trie"
 	"golang.org/x/exp/maps"
 )
+
+type TrackedStorageKey struct {
+	// Key         string
+	Reads       uint32
+	Writes      uint32
+	Whitelisted bool
+}
+
+// Create a default `TrackedStorageKey`
+func NewTrackedStorageKey(key string) TrackedStorageKey {
+	return TrackedStorageKey{
+		// Key:         key,
+		Reads:       0,
+		Writes:      0,
+		Whitelisted: false,
+	}
+}
+
+// Check if this key has been "read", i.e. it exists in the memory overlay.
+//
+// Can be true if the key has been read, has been written to, or has been
+// whitelisted.
+func (tsk *TrackedStorageKey) HasBeenRead() bool {
+	return tsk.Whitelisted || tsk.Reads > 0 || tsk.HasBeenWritten()
+}
+
+// Check if this key has been "written", i.e. a new value will be committed to the database.
+//
+// Can be true if the key has been written to, or has been whitelisted.
+func (tsk *TrackedStorageKey) HasBeenWritten() bool {
+	return tsk.Whitelisted || tsk.Writes > 0
+}
+
+// Add a storage read to this key.
+func (tsk *TrackedStorageKey) AddRead() {
+	tsk.Reads += 1
+}
+
+func (tsk *TrackedStorageKey) SetReads(count uint32) {
+	tsk.Reads = count
+}
+
+// Add a storage write to this key.
+func (tsk *TrackedStorageKey) AddWrite() {
+	tsk.Writes += 1
+}
+
+func (tsk *TrackedStorageKey) SetWrites(count uint32) {
+	tsk.Writes = count
+}
+
+// Whitelist this key.
+func (tsk *TrackedStorageKey) Whitelist() {
+	tsk.Whitelisted = true
+}
+
+type KeyTracker struct {
+	lock           sync.Mutex
+	enableTracking bool
+
+	// // Key tracker for keys in the main trie.
+	// // We track the total number of reads and writes to these keys,
+	// // not de-duplicated for repeats.
+	// mainKeys LinkedHashMap[TrackedStorageKey]
+
+	// // Key tracker for keys in a child trie.
+	// // Child trie are identified by their storage key (i.e. `ChildInfo::storage_key()`)
+	// // We track the total number of reads and writes to these keys,
+	// // not de-duplicated for repeats.
+	// childKeys NestedLinkedHashMap[TrackedStorageKey]
+
+	keys map[string]TrackedStorageKey
+}
+
+func NewKeyTracker() KeyTracker {
+	return KeyTracker{
+		lock:           sync.Mutex{},
+		enableTracking: false,
+		keys:           map[string]TrackedStorageKey{},
+	}
+}
+
+func (tr *KeyTracker) WipeTracker() {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	tr.enableTracking = false
+	for _, k := range tr.keys {
+		k.Reads = 0
+		k.Writes = 0
+	}
+}
+
+func (tr *KeyTracker) Enable() {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	tr.enableTracking = true
+}
+
+func (tr *KeyTracker) Disable() {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	tr.enableTracking = false
+}
+
+func (tr *KeyTracker) Reads() uint32 {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	sum := uint32(0)
+	for _, tk := range tr.keys {
+		sum += tk.Reads
+	}
+	return sum
+}
+
+func (tr *KeyTracker) Writes() uint32 {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	sum := uint32(0)
+	for _, tk := range tr.keys {
+		sum += tk.Writes
+	}
+	return sum
+}
+
+func (tr *KeyTracker) addReadKey(key string, count uint32) {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	if !tr.enableTracking {
+		return
+	}
+
+	sk := tr.keys[key]
+	if !sk.HasBeenRead() {
+		if count > 0 {
+			sk.SetReads(count)
+		} else {
+			sk.AddRead()
+		}
+		tr.keys[key] = sk
+	}
+}
+
+func (tr *KeyTracker) addWriteKey(key string, count uint32) {
+	tr.lock.Lock()
+	defer tr.lock.Unlock()
+
+	if !tr.enableTracking {
+		return
+	}
+
+	sk := tr.keys[key]
+	if !sk.HasBeenWritten() {
+		if count > 0 {
+			sk.SetWrites(count)
+		} else {
+			sk.AddWrite()
+		}
+		tr.keys[key] = sk
+	}
+}
 
 // TrieState is a wrapper around a transient trie that is used during the course of executing some runtime call.
 // If the execution of the call is successful, the trie will be saved in the StorageState.
 type TrieState struct {
-	mtx          sync.RWMutex
-	transactions *list.List
+	mtx           sync.RWMutex
+	transactions  *list.List
+	duplicateTrie *trie.Trie
+	keyTracker    KeyTracker
+}
+
+func (s *TrieState) DbWhitelistKey(key string) {
+	tsk := NewTrackedStorageKey(key)
+	tsk.Whitelist()
+	s.keyTracker.keys[key] = tsk
+}
+
+func (s *TrieState) DbResetTracker() {
+	s.keyTracker.WipeTracker()
+}
+
+func (s *TrieState) DbStartTracker() {
+	s.keyTracker.Enable()
+}
+
+func (s *TrieState) DbStopTracker() {
+	s.keyTracker.Disable()
+}
+
+func (s *TrieState) DbReadCount() uint32 {
+	return s.keyTracker.Reads()
+}
+
+func (s *TrieState) DbWriteCount() uint32 {
+	return s.keyTracker.Writes()
+}
+
+func (s *TrieState) DbWipe() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	// TODO: there is no caching layer
+	// changes (commited + reverted) from the overlay/cache are commited once per block
+}
+
+func (s *TrieState) DbCommit() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	// TODO: there is no caching layer
+	// changes (commited + reverted) from the overlay/cache are commited once per block
+}
+
+func (s *TrieState) DbStoreSnapshot() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	s.duplicateTrie = s.getCurrentTrie().Snapshot()
+	s.updateCurrentTrie(s.getCurrentTrie().Snapshot())
+}
+
+func (s *TrieState) DbRestoreSnapshot() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	s.updateCurrentTrie(s.duplicateTrie)
 }
 
 func NewTrieState(state *trie.Trie) *TrieState {
@@ -27,6 +248,7 @@ func NewTrieState(state *trie.Trie) *TrieState {
 	transactions.PushBack(state)
 	return &TrieState{
 		transactions: transactions,
+		keyTracker:   NewKeyTracker(),
 	}
 }
 
@@ -71,8 +293,17 @@ func (t *TrieState) CommitTransaction() {
 	t.transactions.Back().Prev().Value = t.transactions.Remove(t.transactions.Back())
 }
 
+func (t *TrieState) SetVersion(v trie.TrieLayout) {
+	t.mtx.Lock()
+	defer t.mtx.Unlock()
+	t.getCurrentTrie().SetVersion(v)
+}
+
 // Trie returns the TrieState's underlying trie
 func (t *TrieState) Trie() *trie.Trie {
+	t.mtx.RLock()
+	defer t.mtx.RUnlock()
+
 	return t.getCurrentTrie()
 }
 
@@ -80,6 +311,9 @@ func (t *TrieState) Trie() *trie.Trie {
 // can no longer be modified, all further changes are on a new "version" of the trie.
 // It returns the new version of the trie.
 func (t *TrieState) Snapshot() *trie.Trie {
+	t.mtx.RLock()
+	defer t.mtx.RUnlock()
+
 	return t.getCurrentTrie().Snapshot()
 }
 
@@ -87,7 +321,7 @@ func (t *TrieState) Snapshot() *trie.Trie {
 func (t *TrieState) Put(key, value []byte) (err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
-
+	t.keyTracker.addWriteKey(string(key), 0)
 	return t.getCurrentTrie().Put(key, value)
 }
 
@@ -95,17 +329,24 @@ func (t *TrieState) Put(key, value []byte) (err error) {
 func (t *TrieState) Get(key []byte) []byte {
 	t.mtx.RLock()
 	defer t.mtx.RUnlock()
+	t.keyTracker.addReadKey(string(key), 0)
 	return t.getCurrentTrie().Get(key)
 }
 
 // MustRoot returns the trie's root hash. It panics if it fails to compute the root.
-func (t *TrieState) MustRoot(maxInlineValue int) common.Hash {
-	return t.getCurrentTrie().MustHash(maxInlineValue)
+func (t *TrieState) MustRoot() common.Hash {
+	t.mtx.RLock()
+	defer t.mtx.RUnlock()
+
+	return t.getCurrentTrie().MustHash()
 }
 
 // Root returns the trie's root hash
-func (t *TrieState) Root(maxInlineValue int) (common.Hash, error) {
-	return t.getCurrentTrie().Hash(maxInlineValue)
+func (t *TrieState) Root() (common.Hash, error) {
+	t.mtx.RLock()
+	defer t.mtx.RUnlock()
+
+	return t.getCurrentTrie().Hash()
 }
 
 // Has returns whether or not a key exists
@@ -122,6 +363,7 @@ func (t *TrieState) Delete(key []byte) (err error) {
 
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
+	t.keyTracker.addWriteKey(string(key), 0)
 	err = t.getCurrentTrie().Delete(key)
 	if err != nil {
 		return fmt.Errorf("deleting from trie: %w", err)
@@ -149,8 +391,10 @@ func (t *TrieState) ClearPrefixLimit(prefix []byte, limit uint32) (
 	deleted uint32, allDeleted bool, err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
-
-	return t.getCurrentTrie().ClearPrefixLimit(prefix, limit)
+	deletedKeys, allDeleted, err := t.getCurrentTrie().ClearPrefixLimit(prefix, limit)
+	t.keyTracker.addReadKey(string(prefix), deletedKeys)
+	t.keyTracker.addWriteKey(string(prefix), deletedKeys)
+	return deletedKeys, allDeleted, err
 }
 
 // TrieEntries returns every key-value pair in the trie
@@ -171,6 +415,7 @@ func (t *TrieState) SetChild(keyToChild []byte, child *trie.Trie) error {
 func (t *TrieState) SetChildStorage(keyToChild, key, value []byte) error {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
+
 	return t.getCurrentTrie().PutIntoChild(keyToChild, key, value)
 }
 
@@ -178,6 +423,7 @@ func (t *TrieState) SetChildStorage(keyToChild, key, value []byte) error {
 func (t *TrieState) GetChild(keyToChild []byte) (*trie.Trie, error) {
 	t.mtx.RLock()
 	defer t.mtx.RUnlock()
+
 	return t.getCurrentTrie().GetChild(keyToChild)
 }
 
@@ -185,6 +431,7 @@ func (t *TrieState) GetChild(keyToChild []byte) (*trie.Trie, error) {
 func (t *TrieState) GetChildStorage(keyToChild, key []byte) ([]byte, error) {
 	t.mtx.RLock()
 	defer t.mtx.RUnlock()
+
 	return t.getCurrentTrie().GetFromChild(keyToChild, key)
 }
 
@@ -192,6 +439,7 @@ func (t *TrieState) GetChildStorage(keyToChild, key []byte) ([]byte, error) {
 func (t *TrieState) DeleteChild(key []byte) (err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
+
 	return t.getCurrentTrie().DeleteChild(key)
 }
 

@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/ChainSafe/gossamer/dot/telemetry"
 )
 
 var (
@@ -219,94 +217,96 @@ func (h *votingRoundHandler) Stop() (err error) {
 }
 
 func (h *votingRoundHandler) Run() (err error) {
-	defer close(h.engineDone)
+	// defer close(h.engineDone)
 
-	start := time.Now()
+	// start := time.Now()
 
-	logger.Debugf("starting round %d with set id %d",
-		h.grandpaService.state.round, h.grandpaService.state.setID)
+	// logger.Debugf("starting round %d with set id %d",
+	// 	h.grandpaService.state.round, h.grandpaService.state.setID)
 
-	for {
-		select {
-		case <-h.stopCh:
-			return nil
+	// for {
+	// 	select {
+	// 	case <-h.stopCh:
+	// 		return nil
 
-		case action := <-h.finalisationEngineCh:
-			switch action {
-			case determinePrevote:
-				isPrimary, err := h.grandpaService.handleIsPrimary()
-				if err != nil {
-					return fmt.Errorf("handling primary: %w", err)
-				}
+	// 	case action := <-h.finalisationEngineCh:
+	// 		switch action {
+	// 		case determinePrevote:
+	// 			isPrimary, err := h.grandpaService.handleIsPrimary()
+	// 			if err != nil {
+	// 				return fmt.Errorf("handling primary: %w", err)
+	// 			}
 
-				preVote, err := h.grandpaService.determinePreVote()
-				if err != nil {
-					return fmt.Errorf("determining pre-vote: %w", err)
-				}
+	// 			preVote, err := h.grandpaService.determinePreVote()
+	// 			if err != nil {
+	// 				return fmt.Errorf("determining pre-vote: %w", err)
+	// 			}
 
-				signedpreVote, prevoteMessage, err :=
-					h.grandpaService.createSignedVoteAndVoteMessage(preVote, prevote)
-				if err != nil {
-					return fmt.Errorf("creating signed vote: %w", err)
-				}
+	// 			signedpreVote, prevoteMessage, err :=
+	// 				h.grandpaService.createSignedVoteAndVoteMessage(preVote, prevote)
+	// 			if err != nil {
+	// 				return fmt.Errorf("creating signed vote: %w", err)
+	// 			}
 
-				if !isPrimary {
-					h.grandpaService.prevotes.Store(h.grandpaService.publicKeyBytes(), signedpreVote)
-				}
+	// 			if !isPrimary {
+	// 				h.grandpaService.prevotes.Store(h.grandpaService.publicKeyBytes(), signedpreVote)
+	// 			}
 
-				logger.Debugf("sending pre-vote message: {%v}", prevoteMessage)
-				err = h.grandpaService.sendPrevoteMessage(prevoteMessage)
-				if err != nil {
-					return fmt.Errorf("sending pre-vote message: %w", err)
-				}
+	// 			logger.Debugf("sending pre-vote message: {%v}", prevoteMessage)
+	// 			err = h.grandpaService.sendPrevoteMessage(prevoteMessage)
+	// 			if err != nil {
+	// 				return fmt.Errorf("sending pre-vote message: %w", err)
+	// 			}
 
-			case determinePrecommit:
-				preCommit, err := h.grandpaService.determinePreCommit()
-				if err != nil {
-					return fmt.Errorf("determining pre-commit: %w", err)
-				}
+	// 		case determinePrecommit:
+	// 			preCommit, err := h.grandpaService.determinePreCommit()
+	// 			if err != nil {
+	// 				return fmt.Errorf("determining pre-commit: %w", err)
+	// 			}
 
-				signedPreCommit, precommitMessage, err :=
-					h.grandpaService.createSignedVoteAndVoteMessage(preCommit, precommit)
-				if err != nil {
-					return fmt.Errorf("creating signed vote: %w", err)
-				}
+	// 			signedPreCommit, precommitMessage, err :=
+	// 				h.grandpaService.createSignedVoteAndVoteMessage(preCommit, precommit)
+	// 			if err != nil {
+	// 				return fmt.Errorf("creating signed vote: %w", err)
+	// 			}
 
-				h.grandpaService.precommits.Store(h.grandpaService.publicKeyBytes(), signedPreCommit)
-				logger.Debugf("sending pre-commit message: {%v}", precommitMessage)
-				err = h.grandpaService.sendPrecommitMessage(precommitMessage)
-				if err != nil {
-					logger.Errorf("sending pre-commit message: %s", err)
-				}
+	// 			h.grandpaService.precommits.Store(h.grandpaService.publicKeyBytes(), signedPreCommit)
+	// 			logger.Debugf("sending pre-commit message: {%v}", precommitMessage)
+	// 			err = h.grandpaService.sendPrecommitMessage(precommitMessage)
+	// 			if err != nil {
+	// 				logger.Errorf("sending pre-commit message: %s", err)
+	// 			}
 
-			case finalize:
-				commitMessage, err := h.grandpaService.newCommitMessage(
-					h.grandpaService.head, h.grandpaService.state.round, h.grandpaService.state.setID)
-				if err != nil {
-					return fmt.Errorf("creating commit message: %w", err)
-				}
+	// 		case finalize:
+	// 			commitMessage, err := h.grandpaService.newCommitMessage(
+	// 				h.grandpaService.head, h.grandpaService.state.round, h.grandpaService.state.setID)
+	// 			if err != nil {
+	// 				return fmt.Errorf("creating commit message: %w", err)
+	// 			}
 
-				commitConsensusMessage, err := commitMessage.ToConsensusMessage()
-				if err != nil {
-					return fmt.Errorf("transforming commit into consensus message: %w", err)
-				}
+	// 			commitConsensusMessage, err := commitMessage.ToConsensusMessage()
+	// 			if err != nil {
+	// 				return fmt.Errorf("transforming commit into consensus message: %w", err)
+	// 			}
 
-				logger.Debugf("sending commit message: %v", commitMessage)
-				h.grandpaService.network.GossipMessage(commitConsensusMessage)
-				h.grandpaService.telemetry.SendMessage(telemetry.NewAfgFinalizedBlocksUpTo(
-					h.grandpaService.head.Hash(),
-					fmt.Sprint(h.grandpaService.head.Number),
-				))
+	// 			logger.Debugf("sending commit message: %v", commitMessage)
+	// 			h.grandpaService.network.GossipMessage(commitConsensusMessage)
+	// 			h.grandpaService.telemetry.SendMessage(telemetry.NewAfgFinalizedBlocksUpTo(
+	// 				h.grandpaService.head.Hash(),
+	// 				fmt.Sprint(h.grandpaService.head.Number),
+	// 			))
 
-				logger.Debugf("round completed in %s", time.Since(start))
-				return nil
+	// 			logger.Debugf("round completed in %s", time.Since(start))
+	// 			return nil
 
-			case alreadyFinalized:
-				logger.Debugf("round completed in %s", time.Since(start))
-				return nil
-			}
-		}
-	}
+	// 		case alreadyFinalized:
+	// 			logger.Debugf("round completed in %s", time.Since(start))
+	// 			return nil
+	// 		}
+	// 	}
+	// }
+
+	return nil
 }
 
 // actions that should take place accordingly to votes the
