@@ -5,6 +5,7 @@ package rpc
 
 import (
 	"context"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"testing"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/ChainSafe/gossamer/tests/utils/retry"
 
 	"github.com/ChainSafe/gossamer/dot/rpc/modules"
-	"github.com/ChainSafe/gossamer/lib/common"
 	libutils "github.com/ChainSafe/gossamer/lib/utils"
 	"github.com/ChainSafe/gossamer/tests/utils"
 	"github.com/ChainSafe/gossamer/tests/utils/config"
@@ -31,7 +31,7 @@ func TestStableNetworkRPC(t *testing.T) { //nolint:tparallel
 	genesisPath := libutils.GetWestendDevRawGenesisPath(t)
 	con := config.Default()
 	con.ChainSpec = genesisPath
-	con.Core.Role = common.FullNodeRole
+	con.Core.Role = network.FullNodeRole
 	con.RPC.Modules = []string{"system", "author", "chain"}
 	con.Network.MinPeers = 1
 	con.Network.MaxPeers = 20

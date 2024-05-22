@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"os"
 	"path/filepath"
 	"testing"
@@ -55,7 +56,7 @@ func TestNewNode(t *testing.T) {
 	initConfig.BasePath = basepath
 	initConfig.ChainSpec = genFile
 	initConfig.Account.Key = "alice"
-	initConfig.Core.Role = common.FullNodeRole
+	initConfig.Core.Role = network2.FullNodeRole
 	initConfig.Core.WasmInterpreter = wazero_runtime.Name
 	initConfig.Log.Digest = "critical"
 
@@ -102,7 +103,7 @@ func TestNewNode(t *testing.T) {
 			return nil, fmt.Errorf("failed to create trie from genesis: %w", err)
 		}
 		// create genesis block from trie
-		header, err := trie.GenesisBlock()
+		header, err := genesisBlock(trie)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create genesis block from trie: %w", err)
 		}
@@ -279,7 +280,7 @@ func TestNewNodeIntegration(t *testing.T) {
 	err = keystore.LoadKeystore("alice", ks.Babe, sr25519keyRing)
 	require.NoError(t, err)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 
 	node, err := NewNode(config, ks)
 	require.NoError(t, err)
@@ -313,7 +314,7 @@ func TestNewNode_Authority(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, ks.Babe.Size())
 
-	config.Core.Role = common.AuthorityRole
+	config.Core.Role = network2.AuthorityRole
 
 	node, err := NewNode(config, ks)
 	require.NoError(t, err)
@@ -348,7 +349,7 @@ func TestStartStopNode(t *testing.T) {
 	err = keystore.LoadKeystore("alice", ks.Babe, sr25519keyRing)
 	require.NoError(t, err)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 
 	node, err := NewNode(config, ks)
 	require.NoError(t, err)
@@ -366,7 +367,7 @@ func TestInitNode_LoadStorageRoot(t *testing.T) {
 
 	genPath := newTestGenesisAndRuntime(t)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.Core.BabeAuthority = false
 	config.Core.GrandpaAuthority = false
 	config.ChainSpec = genPath
@@ -414,7 +415,7 @@ func TestInitNode_LoadBalances(t *testing.T) {
 
 	genPath := newTestGenesisAndRuntime(t)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.Core.BabeAuthority = false
 	config.Core.GrandpaAuthority = false
 	config.ChainSpec = genPath
@@ -453,7 +454,7 @@ func TestNode_PersistGlobalName_WhenInitialize(t *testing.T) {
 	config := DefaultTestWestendDevConfig(t)
 	config.Name = globalName
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.Core.BabeAuthority = false
 	config.Core.GrandpaAuthority = false
 	config.ChainSpec = newTestGenesisAndRuntime(t)

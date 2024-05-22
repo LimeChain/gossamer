@@ -6,6 +6,7 @@ package database
 import (
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 	"os"
 
 	"github.com/ChainSafe/gossamer/internal/log"
@@ -112,7 +113,7 @@ func (p *PebbleDB) Flush() error {
 
 // NewBatch returns an implementation of Batch interface using the
 // internal database
-func (p *PebbleDB) NewBatch() Batch {
+func (p *PebbleDB) NewBatch() interfaces.Batch {
 	return &pebbleBatch{
 		batch: p.db.NewBatch(),
 	}

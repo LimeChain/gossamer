@@ -10,6 +10,7 @@
 package mock_database
 
 import (
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 	reflect "reflect"
 
 	database "github.com/ChainSafe/gossamer/internal/database"
@@ -468,10 +469,10 @@ func (mr *MockDatabaseMockRecorder) Has(key any) *gomock.Call {
 }
 
 // NewBatch mocks base method.
-func (m *MockDatabase) NewBatch() database.Batch {
+func (m *MockDatabase) NewBatch() interfaces.Batch {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewBatch")
-	ret0, _ := ret[0].(database.Batch)
+	ret0, _ := ret[0].(interfaces.Batch)
 	return ret0
 }
 
@@ -621,10 +622,10 @@ func (mr *MockTableMockRecorder) Has(key any) *gomock.Call {
 }
 
 // NewBatch mocks base method.
-func (m *MockTable) NewBatch() database.Batch {
+func (m *MockTable) NewBatch() interfaces.Batch {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewBatch")
-	ret0, _ := ret[0].(database.Batch)
+	ret0, _ := ret[0].(interfaces.Batch)
 	return ret0
 }
 

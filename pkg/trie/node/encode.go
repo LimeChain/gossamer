@@ -58,6 +58,7 @@ func (n *Node) Encode(buffer Buffer) (err error) {
 				return fmt.Errorf("writing hashed storage value: %w", err)
 			}
 		default:
+			// TODO: scale
 			encoder := scale.NewEncoder(buffer)
 			err = encoder.Encode(n.StorageValue)
 			if err != nil {

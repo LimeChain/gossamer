@@ -64,7 +64,8 @@ func encodeChildrenOpportunisticParallel(children []*Node, buffer io.Writer) (er
 		case parallelEncodingRateLimit <- struct{}{}:
 			// We have a goroutine available to encode
 			// the branch in parallel.
-			go runEncodeChild(child, i, resultsCh, parallelEncodingRateLimit)
+			// TODO: removed goroutine
+			runEncodeChild(child, i, resultsCh, parallelEncodingRateLimit)
 		default:
 			// we reached the maximum parallel goroutines
 			// so encode this branch in this goroutine
@@ -123,6 +124,7 @@ func encodeChild(child *Node, buffer io.Writer) (err error) {
 		return fmt.Errorf("computing %s Merkle value: %w", child.Kind(), err)
 	}
 
+	// TODO: scale
 	encoder := scale.NewEncoder(buffer)
 	err = encoder.Encode(merkleValue)
 	if err != nil {

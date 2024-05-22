@@ -5,10 +5,10 @@ package grandpa
 
 import (
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"strings"
 
 	"github.com/ChainSafe/gossamer/dot/network"
-	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/pkg/scale"
 
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -25,7 +25,7 @@ type ConsensusMessage = network.ConsensusMessage
 
 // GrandpaHandshake is exchanged by nodes that are beginning the grandpa protocol
 type GrandpaHandshake struct {
-	Role common.NetworkRole
+	Role network2.NetworkRole
 }
 
 // String formats a BlockAnnounceHandshake as a string
@@ -46,7 +46,7 @@ func (hs *GrandpaHandshake) Decode(in []byte) error {
 // IsValid return if it is a valid handshake.
 func (hs *GrandpaHandshake) IsValid() bool {
 	switch hs.Role {
-	case common.AuthorityRole, common.FullNodeRole:
+	case network2.AuthorityRole, network2.FullNodeRole:
 		return true
 	default:
 		return false
@@ -72,12 +72,12 @@ func (s *Service) registerProtocol() error {
 }
 
 func (s *Service) getHandshake() (network.Handshake, error) {
-	var role common.NetworkRole
+	var role network2.NetworkRole
 
 	if s.authority {
-		role = common.AuthorityRole
+		role = network2.AuthorityRole
 	} else {
-		role = common.FullNodeRole
+		role = network2.FullNodeRole
 	}
 
 	return &GrandpaHandshake{

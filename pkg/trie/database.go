@@ -6,8 +6,8 @@ package trie
 import (
 	"bytes"
 	"fmt"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 
-	"github.com/ChainSafe/gossamer/internal/database"
 	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/pkg/trie/codec"
 	"github.com/ChainSafe/gossamer/pkg/trie/db"
@@ -16,7 +16,7 @@ import (
 
 // NewBatcher creates a new database batch.
 type NewBatcher interface {
-	NewBatch() database.Batch
+	NewBatch() interfaces.Batch
 }
 
 // Load reconstructs the trie from the database from the given root hash.

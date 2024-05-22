@@ -6,13 +6,13 @@ package rpc
 import (
 	"context"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 
 	"github.com/ChainSafe/gossamer/dot/rpc/modules"
-	"github.com/ChainSafe/gossamer/lib/common"
 )
 
 // GetPeers calls the endpoint system_peers
-func GetPeers(ctx context.Context, rpcPort string) (peers []common.PeerInfo, err error) {
+func GetPeers(ctx context.Context, rpcPort string) (peers []network.PeerInfo, err error) {
 	endpoint := NewEndpoint(rpcPort)
 	const method = "system_peers"
 	const params = "[]"

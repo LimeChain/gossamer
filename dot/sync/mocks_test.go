@@ -10,6 +10,7 @@
 package sync
 
 import (
+	"github.com/ChainSafe/gossamer/lib/network"
 	reflect "reflect"
 
 	peerset "github.com/ChainSafe/gossamer/dot/peerset"
@@ -613,10 +614,10 @@ func (mr *MockNetworkMockRecorder) BlockAnnounceHandshake(arg0 any) *gomock.Call
 }
 
 // Peers mocks base method.
-func (m *MockNetwork) Peers() []common.PeerInfo {
+func (m *MockNetwork) Peers() []network.PeerInfo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Peers")
-	ret0, _ := ret[0].([]common.PeerInfo)
+	ret0, _ := ret[0].([]network.PeerInfo)
 	return ret0
 }
 

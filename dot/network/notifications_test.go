@@ -6,6 +6,7 @@ package network
 import (
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"reflect"
 	"testing"
 	"time"
@@ -187,7 +188,7 @@ func TestCreateNotificationsMessageHandler_BlockAnnounceHandshake(t *testing.T) 
 
 	// try invalid handshake
 	testHandshake := &BlockAnnounceHandshake{
-		Roles:           common.AuthorityRole,
+		Roles:           network.AuthorityRole,
 		BestBlockNumber: 77,
 		BestBlockHash:   common.Hash{1},
 		// we are using a different genesis here, thus this

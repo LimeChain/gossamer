@@ -4,6 +4,7 @@
 package database
 
 import (
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,12 +13,6 @@ import (
 type Reader interface {
 	Get(key []byte) ([]byte, error)
 	Has(key []byte) (bool, error)
-}
-
-type Writer interface {
-	Put(key, value []byte) error
-	Del(key []byte) error
-	Flush() error
 }
 
 // Iterator iterates over key/value pairs in ascending key order.
@@ -33,32 +28,23 @@ type Iterator interface {
 	io.Closer
 }
 
-// Batch is a write-only operation.
-type Batch interface {
-	io.Closer
-	Writer
-
-	ValueSize() int
-	Reset()
-}
-
 // Database wraps all database operations. All methods are safe for concurrent use.
 type Database interface {
 	Reader
-	Writer
+	interfaces.Writer
 	io.Closer
 
 	Path() string
-	NewBatch() Batch
+	NewBatch() interfaces.Batch
 	NewIterator() (Iterator, error)
 	NewPrefixIterator(prefix []byte) (Iterator, error)
 }
 
 type Table interface {
 	Reader
-	Writer
+	interfaces.Writer
 	Path() string
-	NewBatch() Batch
+	NewBatch() interfaces.Batch
 	NewIterator() (Iterator, error)
 }
 

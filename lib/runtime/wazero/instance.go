@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"sync"
 
 	"github.com/ChainSafe/gossamer/dot/types"
@@ -50,7 +51,7 @@ type Config struct {
 	Storage        runtime.Storage
 	Keystore       *keystore.GlobalKeystore
 	LogLvl         log.Level
-	Role           common.NetworkRole
+	Role           network.NetworkRole
 	NodeStorage    runtime.NodeStorage
 	Network        runtime.BasicNetwork
 	Transaction    runtime.TransactionState
@@ -436,6 +437,12 @@ func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
 		return nil, err
 	}
 
+	//fmt.Println("creating decompressed wasm file...")
+	//err = os.WriteFile("wasm_runtime.wasm", code, 0666)
+	//if err != nil {
+	//	panic(err)
+	//}
+
 	mod, err := rt.Instantiate(ctx, code)
 	if err != nil {
 		return nil, err
@@ -460,7 +467,7 @@ func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
 		Context: &runtime.Context{
 			Allocator:       allocator,
 			Keystore:        cfg.Keystore,
-			Validator:       cfg.Role == common.AuthorityRole,
+			Validator:       cfg.Role == network.AuthorityRole,
 			NodeStorage:     cfg.NodeStorage,
 			Network:         cfg.Network,
 			Transaction:     cfg.Transaction,

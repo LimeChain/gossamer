@@ -6,6 +6,7 @@ package dot
 import (
 	"errors"
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"strings"
 	"time"
 
@@ -249,7 +250,7 @@ func (nodeBuilder) createCoreService(config *cfg.Config, ks *keystore.GlobalKeys
 	st *state.Service, net *network.Service) (
 	*core.Service, error) {
 	logger.Debug("creating core service" +
-		asAuthority(config.Core.Role == common.AuthorityRole) +
+		asAuthority(config.Core.Role == network2.AuthorityRole) +
 		"...")
 
 	genesisData, err := st.Base.LoadGenesisData()

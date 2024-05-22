@@ -5,6 +5,7 @@ package dot
 
 import (
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"strings"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/ChainSafe/gossamer/dot/types"
 	"github.com/ChainSafe/gossamer/internal/log"
 	"github.com/ChainSafe/gossamer/internal/pprof"
-	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/lib/genesis"
 )
 
@@ -106,7 +106,7 @@ type NetworkConfig struct {
 
 // CoreConfig is to marshal/unmarshal toml core config vars
 type CoreConfig struct {
-	Roles            common.NetworkRole
+	Roles            network.NetworkRole
 	BabeAuthority    bool
 	GrandpaAuthority bool
 	WasmInterpreter  string
@@ -166,7 +166,7 @@ func (s *StateConfig) String() string {
 
 // networkServiceEnabled returns true if the network service is enabled
 func networkServiceEnabled(config *cfg.Config) bool {
-	return config.Core.Role != common.NoNetworkRole
+	return config.Core.Role != network.NoNetworkRole
 }
 
 // PprofConfig is the configuration for the pprof HTTP server.

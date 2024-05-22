@@ -7,6 +7,7 @@ import (
 	"crypto/ed25519"
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"path"
 	"time"
 
@@ -35,7 +36,7 @@ const (
 	DefaultProtocolID = "/gossamer/gssmr/0"
 
 	// DefaultRoles the default value for Config.Roles (0 = no network, 1 = full node)
-	DefaultRoles = common.FullNodeRole
+	DefaultRoles = network.FullNodeRole
 
 	// DefaultMinPeerCount is the default minimum peer count
 	DefaultMinPeerCount = 5
@@ -61,7 +62,7 @@ type Config struct {
 	// BasePath the data directory for the node
 	BasePath string
 	// Roles a bitmap value that represents the different roles for the sender node (see Table D.2)
-	Roles common.NetworkRole
+	Roles network.NetworkRole
 
 	// Service interfaces
 	BlockState         BlockState

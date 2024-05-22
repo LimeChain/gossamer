@@ -5,6 +5,7 @@ package modules
 
 import (
 	"errors"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"net/http"
 	"testing"
 
@@ -109,7 +110,7 @@ func TestSystemModule_HealthTest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockNetworkAPI := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI.EXPECT().Health().Return(common.Health{})
+	mockNetworkAPI.EXPECT().Health().Return(network.Health{})
 	sm := &SystemModule{
 		networkAPI: mockNetworkAPI,
 	}
@@ -118,14 +119,14 @@ func TestSystemModule_HealthTest(t *testing.T) {
 	var sysHealthRes SystemHealthResponse
 	err := sm.Health(nil, req, &sysHealthRes)
 	require.NoError(t, err)
-	require.Equal(t, SystemHealthResponse(common.Health{}), sysHealthRes)
+	require.Equal(t, SystemHealthResponse(network.Health{}), sysHealthRes)
 }
 
 func TestSystemModule_NetworkStateTest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockNetworkAPI := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI.EXPECT().NetworkState().Return(common.NetworkState{})
+	mockNetworkAPI.EXPECT().NetworkState().Return(network.NetworkState{})
 	sm := &SystemModule{
 		networkAPI: mockNetworkAPI,
 	}
@@ -141,7 +142,7 @@ func TestSystemModule_PeersTest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockNetworkAPI := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI.EXPECT().Peers().Return([]common.PeerInfo{})
+	mockNetworkAPI.EXPECT().Peers().Return([]network.PeerInfo{})
 	sm := &SystemModule{
 		networkAPI: mockNetworkAPI,
 	}
@@ -157,16 +158,16 @@ func TestSystemModule_NodeRolesTest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockNetworkAPI1 := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI1.EXPECT().NodeRoles().Return(common.FullNodeRole)
+	mockNetworkAPI1.EXPECT().NodeRoles().Return(network.FullNodeRole)
 
 	mockNetworkAPI2 := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI2.EXPECT().NodeRoles().Return(common.LightClientRole)
+	mockNetworkAPI2.EXPECT().NodeRoles().Return(network.LightClientRole)
 
 	mockNetworkAPI3 := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI3.EXPECT().NodeRoles().Return(common.AuthorityRole)
+	mockNetworkAPI3.EXPECT().NodeRoles().Return(network.AuthorityRole)
 
 	mockNetworkAPI4 := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPI4.EXPECT().NodeRoles().Return(common.NetworkRole(21))
+	mockNetworkAPI4.EXPECT().NodeRoles().Return(network.NetworkRole(21))
 
 	type args struct {
 		r   *http.Request
@@ -209,7 +210,7 @@ func TestSystemModule_NodeRolesTest(t *testing.T) {
 			args: args{
 				req: &EmptyRequest{},
 			},
-			exp: []interface{}{"UnknownRole", []interface{}{common.NetworkRole(21)}},
+			exp: []interface{}{"UnknownRole", []interface{}{network.NetworkRole(21)}},
 		},
 	}
 	for _, tt := range tests {
@@ -407,13 +408,13 @@ func TestSystemModule_LocalListenAddresses(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockNetworkAPIEmpty := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPIEmpty.EXPECT().NetworkState().Return(common.NetworkState{})
+	mockNetworkAPIEmpty.EXPECT().NetworkState().Return(network.NetworkState{})
 
 	addr, err := multiaddr.NewMultiaddr("/ip4/1.2.3.4/tcp/80")
 	require.NoError(t, err)
 	multiAddy := make([]multiaddr.Multiaddr, 1)
 	multiAddy[0] = addr
-	ns := common.NetworkState{
+	ns := network.NetworkState{
 		PeerID:     "jimbo",
 		Multiaddrs: multiAddy,
 	}
@@ -468,13 +469,13 @@ func TestSystemModule_LocalPeerId(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockNetworkAPIEmpty := mocks.NewMockNetworkAPI(ctrl)
-	mockNetworkAPIEmpty.EXPECT().NetworkState().Return(common.NetworkState{})
+	mockNetworkAPIEmpty.EXPECT().NetworkState().Return(network.NetworkState{})
 
 	addr, err := multiaddr.NewMultiaddr("/ip4/1.2.3.4/tcp/80")
 	require.NoError(t, err)
 	multiAddy := make([]multiaddr.Multiaddr, 1)
 	multiAddy[0] = addr
-	ns := common.NetworkState{
+	ns := network.NetworkState{
 		PeerID:     "jimbo",
 		Multiaddrs: multiAddy,
 	}

@@ -6,6 +6,7 @@ package network
 import (
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 
 	"github.com/ChainSafe/gossamer/dot/peerset"
 	"github.com/ChainSafe/gossamer/dot/types"
@@ -99,7 +100,7 @@ func decodeBlockAnnounceMessage(in []byte) (NotificationsMessage, error) {
 
 // BlockAnnounceHandshake is exchanged by nodes that are beginning the BlockAnnounce protocol
 type BlockAnnounceHandshake struct {
-	Roles           common.NetworkRole
+	Roles           network.NetworkRole
 	BestBlockNumber uint32
 	BestBlockHash   common.Hash
 	GenesisHash     common.Hash
@@ -131,7 +132,7 @@ func (hs *BlockAnnounceHandshake) Decode(in []byte) error {
 // IsValid returns true if handshakes's role is valid.
 func (hs *BlockAnnounceHandshake) IsValid() bool {
 	switch hs.Roles {
-	case common.AuthorityRole, common.FullNodeRole, common.LightClientRole:
+	case network.AuthorityRole, network.FullNodeRole, network.LightClientRole:
 		return true
 	default:
 		return false
@@ -159,7 +160,7 @@ func (s *Service) validateBlockAnnounceHandshake(from peer.ID, hs Handshake) err
 	}
 
 	switch bhs.Roles {
-	case common.FullNodeRole, common.LightClientRole, common.AuthorityRole:
+	case network.FullNodeRole, network.LightClientRole, network.AuthorityRole:
 	default:
 		return fmt.Errorf("%w: %d", errInvalidRole, bhs.Roles)
 	}

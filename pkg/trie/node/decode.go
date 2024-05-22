@@ -82,6 +82,7 @@ func decodeBranch(reader io.Reader, variant variant, partialKeyLength uint16) (
 		return nil, fmt.Errorf("%w: %s", ErrReadChildrenBitmap, err)
 	}
 
+	// TODO: scale
 	sd := scale.NewDecoder(reader)
 
 	switch variant {
@@ -142,6 +143,7 @@ func decodeLeaf(reader io.Reader, variant variant, partialKeyLength uint16) (nod
 		return nil, fmt.Errorf("cannot decode key: %w", err)
 	}
 
+	// TODO: scale
 	sd := scale.NewDecoder(reader)
 
 	if variant == leafWithHashedValueVariant {

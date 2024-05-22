@@ -6,6 +6,7 @@ package dot
 import (
 	"context"
 	"fmt"
+	"github.com/ChainSafe/gossamer/pkg/trie"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -165,7 +166,7 @@ func (nodeBuilder) initNode(config *cfg.Config) error {
 	}
 
 	// create genesis block from trie
-	header, err := t.GenesisBlock()
+	header, err := genesisBlock(t)
 	if err != nil {
 		return fmt.Errorf("failed to create genesis block from trie: %w", err)
 	}
@@ -555,4 +556,18 @@ func (nodeBuilder) loadRuntime(config *cfg.Config, ns *runtime.NodeStorage,
 	}
 
 	return nil
+}
+
+func genesisBlock(t trie.Trie) (genesisHeader types.Header, err error) {
+	rootHash, err := t.Hash()
+	if err != nil {
+		return genesisHeader, fmt.Errorf("root hashing trie: %w", err)
+	}
+
+	parentHash := common.Hash{0}
+	extrinsicRoot := trie.EmptyHash
+	const blockNumber = 0
+	digest := types.NewDigest()
+	genesisHeader = *types.NewHeader(parentHash, rootHash, extrinsicRoot, blockNumber, digest)
+	return genesisHeader, nil
 }

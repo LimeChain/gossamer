@@ -3,6 +3,7 @@
 package db
 
 import (
+	"encoding/hex"
 	"fmt"
 	"sync"
 
@@ -94,4 +95,10 @@ func (mdb *MemoryDB) Put(key, value []byte) error {
 
 	mdb.data[hash] = value
 	return nil
+}
+
+func (mdb *MemoryDB) Print() {
+	for k, v := range mdb.data {
+		fmt.Println(fmt.Printf("key [%s], value: [%s]", hex.EncodeToString(k[:]), hex.EncodeToString(v)))
+	}
 }

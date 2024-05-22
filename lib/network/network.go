@@ -1,9 +1,10 @@
 // Copyright 2021 ChainSafe Systems (ON)
 // SPDX-License-Identifier: LGPL-3.0-only
 
-package common
+package network
 
 import (
+	"github.com/ChainSafe/gossamer/lib/common"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -24,7 +25,7 @@ type NetworkState struct {
 type PeerInfo struct {
 	PeerID     string
 	Role       NetworkRole
-	BestHash   Hash
+	BestHash   common.Hash
 	BestNumber uint64
 }
 

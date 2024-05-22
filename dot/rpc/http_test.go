@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"io"
 	"net"
 	"net/http"
@@ -194,7 +195,7 @@ func TestRPCExternalEnable_UnsafeExternalNotEnabled(t *testing.T) {
 	safebuf.Write(safeData)
 
 	netmock := mocks.NewMockNetworkAPI(ctrl)
-	netmock.EXPECT().NetworkState().Return(common.NetworkState{
+	netmock.EXPECT().NetworkState().Return(network2.NetworkState{
 		PeerID: "peer id",
 	})
 

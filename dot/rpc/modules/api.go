@@ -11,6 +11,7 @@ import (
 	"github.com/ChainSafe/gossamer/lib/crypto/ed25519"
 	"github.com/ChainSafe/gossamer/lib/genesis"
 	"github.com/ChainSafe/gossamer/lib/grandpa"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"github.com/ChainSafe/gossamer/lib/runtime"
 	"github.com/ChainSafe/gossamer/lib/transaction"
 	"github.com/ChainSafe/gossamer/pkg/trie"
@@ -51,10 +52,10 @@ type BlockAPI interface {
 
 // NetworkAPI interface for network state methods
 type NetworkAPI interface {
-	Health() common.Health
-	NetworkState() common.NetworkState
-	Peers() []common.PeerInfo
-	NodeRoles() common.NetworkRole
+	Health() network.Health
+	NetworkState() network.NetworkState
+	Peers() []network.PeerInfo
+	NodeRoles() network.NetworkRole
 	Stop() error
 	Start() error
 	StartingBlock() int64

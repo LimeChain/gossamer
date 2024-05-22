@@ -5,12 +5,13 @@ package database
 
 import (
 	"bytes"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 )
 
-var _ Batch = (*tableBatch)(nil)
+var _ interfaces.Batch = (*tableBatch)(nil)
 
 type tableBatch struct {
-	batch  Batch
+	batch  interfaces.Batch
 	prefix []byte
 }
 

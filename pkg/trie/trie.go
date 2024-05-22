@@ -58,6 +58,10 @@ func (t *Trie) SetVersion(v TrieLayout) {
 	t.version = v
 }
 
+func (t *Trie) Version() TrieLayout {
+	return t.version
+}
+
 // Equal is to compare one trie with other, this method will ignore the shared db instance
 func (t *Trie) Equal(other *Trie) bool {
 	if t == nil && other == nil {

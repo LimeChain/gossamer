@@ -6,6 +6,7 @@ package modules
 import (
 	"bytes"
 	"errors"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"math/big"
 	"net/http"
 	"strings"
@@ -36,7 +37,7 @@ type EmptyRequest struct{}
 type StringResponse string
 
 // SystemHealthResponse struct to marshal json
-type SystemHealthResponse common.Health
+type SystemHealthResponse network.Health
 
 // NetworkStateString Network State represented as string so JSON encode/decoding works
 type NetworkStateString struct {
@@ -50,7 +51,7 @@ type SystemNetworkStateResponse struct {
 }
 
 // SystemPeersResponse struct to marshal json
-type SystemPeersResponse []common.PeerInfo
+type SystemPeersResponse []network.PeerInfo
 
 // U64Response holds U64 response
 type U64Response uint64
@@ -142,11 +143,11 @@ func (sm *SystemModule) NodeRoles(r *http.Request, req *EmptyRequest, res *[]int
 
 	role := sm.networkAPI.NodeRoles()
 	switch role {
-	case common.FullNodeRole:
+	case network.FullNodeRole:
 		resultArray = append(resultArray, "Full")
-	case common.LightClientRole:
+	case network.LightClientRole:
 		resultArray = append(resultArray, "LightClient")
-	case common.AuthorityRole:
+	case network.AuthorityRole:
 		resultArray = append(resultArray, "Authority")
 	default:
 		resultArray = append(resultArray, "UnknownRole")

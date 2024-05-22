@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"math/big"
 	"strings"
 	"sync"
@@ -17,7 +18,6 @@ import (
 	"github.com/ChainSafe/gossamer/dot/types"
 	"github.com/ChainSafe/gossamer/internal/log"
 	"github.com/ChainSafe/gossamer/internal/metrics"
-	"github.com/ChainSafe/gossamer/lib/common"
 	libp2pnetwork "github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
@@ -599,8 +599,8 @@ func (s *Service) GetRequestResponseProtocol(subprotocol string, requestTimeout 
 }
 
 // Health returns information about host needed for the rpc server
-func (s *Service) Health() common.Health {
-	return common.Health{
+func (s *Service) Health() network.Health {
+	return network.Health{
 		Peers:           s.host.peerCount(),
 		IsSyncing:       !s.syncer.IsSynced(),
 		ShouldHavePeers: !s.noBootstrap,
@@ -608,8 +608,8 @@ func (s *Service) Health() common.Health {
 }
 
 // NetworkState returns information about host needed for the rpc server and the runtime
-func (s *Service) NetworkState() common.NetworkState {
-	return common.NetworkState{
+func (s *Service) NetworkState() network.NetworkState {
+	return network.NetworkState{
 		PeerID:     s.host.id().String(),
 		Multiaddrs: s.host.multiaddrs(),
 	}
@@ -621,8 +621,8 @@ func (s *Service) AllConnectedPeersIDs() []peer.ID {
 }
 
 // Peers returns information about connected peers needed for the rpc server
-func (s *Service) Peers() []common.PeerInfo {
-	var peers []common.PeerInfo
+func (s *Service) Peers() []network.PeerInfo {
+	var peers []network.PeerInfo
 
 	s.notificationsMu.RLock()
 	np := s.notificationsProtocols[blockAnnounceMsgType]
@@ -631,7 +631,7 @@ func (s *Service) Peers() []common.PeerInfo {
 	for _, p := range s.host.peers() {
 		data := np.peersData.getInboundHandshakeData(p)
 		if data == nil || data.handshake == nil {
-			peers = append(peers, common.PeerInfo{
+			peers = append(peers, network.PeerInfo{
 				PeerID: p.String(),
 			})
 
@@ -639,7 +639,7 @@ func (s *Service) Peers() []common.PeerInfo {
 		}
 
 		peerHandshakeMessage := data.handshake
-		peers = append(peers, common.PeerInfo{
+		peers = append(peers, network.PeerInfo{
 			PeerID:     p.String(),
 			Role:       peerHandshakeMessage.(*BlockAnnounceHandshake).Roles,
 			BestHash:   peerHandshakeMessage.(*BlockAnnounceHandshake).BestBlockHash,
@@ -661,7 +661,7 @@ func (s *Service) RemoveReservedPeers(addrs ...string) error {
 }
 
 // NodeRoles Returns the roles the node is running as.
-func (s *Service) NodeRoles() common.NetworkRole {
+func (s *Service) NodeRoles() network.NetworkRole {
 	return s.cfg.Roles
 }
 

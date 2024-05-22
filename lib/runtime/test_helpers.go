@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"io"
 	"net/http"
 	"os"
@@ -168,7 +169,7 @@ func GetAbsolutePath(targetDir string) string {
 type TestRuntimeNetwork struct{}
 
 // NetworkState ...
-func (*TestRuntimeNetwork) NetworkState() common.NetworkState {
+func (*TestRuntimeNetwork) NetworkState() network.NetworkState {
 	testAddrs := []ma.Multiaddr(nil)
 
 	// create mock multiaddress
@@ -176,7 +177,7 @@ func (*TestRuntimeNetwork) NetworkState() common.NetworkState {
 
 	testAddrs = append(testAddrs, addr)
 
-	return common.NetworkState{
+	return network.NetworkState{
 		PeerID:     "12D3KooWDcCNBqAemRvguPa7rtmsbn2hpgLqAz8KsMMFsF2rdCUP",
 		Multiaddrs: testAddrs,
 	}

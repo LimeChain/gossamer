@@ -11,6 +11,7 @@ package state
 
 import (
 	json "encoding/json"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 	reflect "reflect"
 
 	database "github.com/ChainSafe/gossamer/internal/database"
@@ -120,10 +121,10 @@ func (mr *MockBlockStateDatabaseMockRecorder) Has(arg0 any) *gomock.Call {
 }
 
 // NewBatch mocks base method.
-func (m *MockBlockStateDatabase) NewBatch() database.Batch {
+func (m *MockBlockStateDatabase) NewBatch() interfaces.Batch {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewBatch")
-	ret0, _ := ret[0].(database.Batch)
+	ret0, _ := ret[0].(interfaces.Batch)
 	return ret0
 }
 

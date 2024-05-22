@@ -6,6 +6,7 @@
 package dot
 
 import (
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"net/url"
 	"testing"
 	"time"
@@ -20,7 +21,6 @@ import (
 	"github.com/ChainSafe/gossamer/dot/types"
 	"github.com/ChainSafe/gossamer/internal/log"
 	babe "github.com/ChainSafe/gossamer/lib/babe"
-	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/lib/grandpa"
 	"github.com/ChainSafe/gossamer/lib/keystore"
 	"github.com/ChainSafe/gossamer/lib/runtime"
@@ -488,7 +488,7 @@ func TestCreateCoreService(t *testing.T) {
 	config := DefaultTestWestendDevConfig(t)
 
 	genFile := NewTestGenesisRawFile(t, config)
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.Core.BabeAuthority = false
 	config.Core.GrandpaAuthority = false
 	config.ChainSpec = genFile
@@ -586,7 +586,7 @@ func TestCreateRPCService(t *testing.T) {
 
 	genFile := NewTestGenesisRawFile(t, config)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.Core.BabeAuthority = false
 	config.Core.GrandpaAuthority = false
 	config.ChainSpec = genFile
@@ -636,7 +636,7 @@ func TestCreateBABEService_Integration(t *testing.T) {
 
 	genFile := NewTestGenesisRawFile(t, config)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.ChainSpec = genFile
 
 	err := InitNode(config)
@@ -668,7 +668,7 @@ func TestCreateGrandpaService(t *testing.T) {
 
 	genFile := NewTestGenesisRawFile(t, config)
 
-	config.Core.Role = common.AuthorityRole
+	config.Core.Role = network2.AuthorityRole
 	config.ChainSpec = genFile
 
 	err := InitNode(config)
@@ -735,7 +735,7 @@ func TestNewWebSocketServer(t *testing.T) {
 
 	genFile := NewTestGenesisRawFile(t, config)
 
-	config.Core.Role = common.FullNodeRole
+	config.Core.Role = network2.FullNodeRole
 	config.Core.BabeAuthority = false
 	config.Core.GrandpaAuthority = false
 	config.ChainSpec = genFile
@@ -830,7 +830,7 @@ func Test_createDigestHandler(t *testing.T) {
 
 	genFile := NewTestGenesisRawFile(t, config)
 
-	config.Core.Role = common.AuthorityRole
+	config.Core.Role = network2.AuthorityRole
 	config.ChainSpec = genFile
 
 	err := InitNode(config)
