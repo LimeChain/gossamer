@@ -34,8 +34,14 @@ import (
 	"github.com/ChainSafe/gossamer/lib/grandpa"
 	"github.com/ChainSafe/gossamer/lib/keystore"
 	"github.com/ChainSafe/gossamer/lib/runtime"
+	rtstorage "github.com/ChainSafe/gossamer/lib/runtime/storage"
+	wazero_runtime "github.com/ChainSafe/gossamer/lib/runtime/wazero"
 	"github.com/ChainSafe/gossamer/lib/services"
+	"github.com/ChainSafe/gossamer/pkg/scale"
+	"github.com/ChainSafe/gossamer/pkg/trie"
 )
+
+var genesisConfigJson = []byte("{\"system\":{\"code\":\"\"},\"babe\":{\"authorities\":[\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\"],\"epochConfig\":{\"c\":[1,4],\"allowed_slots\":\"PrimarySlots\"}},\"grandpa\":{\"authorities\":[]},\"balances\":{\"balances\":[[\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",1000000000000000000],[\"5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty\",1000000000000000000],[\"5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y\",1000000000000000000],[\"5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy\",1000000000000000000],[\"5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw\",1000000000000000000],[\"5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL\",1000000000000000000],[\"5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY\",1000000000000000000],[\"5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc\",1000000000000000000],[\"5Ck5SLSHYac6WFt5UZRSsdJjwmpSZq85fd5TRNAdZQVzEAPT\",1000000000000000000],[\"5HKPmK9GYtE1PSLsS1qiYU9xQ9Si1NcEhdeCq9sw5bqu4ns8\",1000000000000000000],[ \"5FCfAonRZgTFrTd9HREEyeJjDpT397KMzizE6T3DvebLFE7n\",1000000000000000000],[\"5CRmqmsiNFExV6VbdmPJViVxrWmkaXXvBrSX8oqBT8R9vmWk\",1000000000000000000]]},\"session\": {\"keys\": [[\"5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY\",\"5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY\",{\"grandpa\":\"5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu\",\"babe\":\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\"}]]},\"transactionPayment\":{\"multiplier\":\"1\"},\"sudo\":{\"key\":\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\"}}")
 
 var logger = log.NewFromGlobal(log.AddContext("pkg", "dot"))
 
@@ -156,6 +162,11 @@ func (nodeBuilder) initNode(config *cfg.Config) error {
 		return fmt.Errorf("failed to create trie from genesis: %w", err)
 	}
 
+	err = buildGenesisConfig(&t, genesisConfigJson)
+	if err != nil {
+		return err
+	}
+
 	// create genesis block from trie
 	header, err := runtime.GenesisBlockFromTrie(t)
 	if err != nil {
@@ -200,6 +211,32 @@ func (nodeBuilder) initNode(config *cfg.Config) error {
 	logger.Infof(
 		"node initialised with name %s, id %s, base path %s, chain-spec %s, block %v and genesis hash %s",
 		config.Name, config.ID, config.BasePath, config.ChainSpec, header.Number, header.Hash())
+
+	return nil
+}
+
+func buildGenesisConfig(t *trie.Trie, genesisConfigJson []byte) error {
+	cfg := wazero_runtime.Config{
+		Storage: rtstorage.NewTrieState(*t),
+		LogLvl:  log.DoNotChange,
+	}
+
+	rt, err := wazero_runtime.NewRuntimeFromGenesis(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to create genesis runtime: %w", err)
+	}
+
+	genesisConfigJsonBytes, err := scale.Marshal(genesisConfigJson)
+	if err != nil {
+		return fmt.Errorf("failed to marshal genesis config: %s", err)
+	}
+
+	_, err = rt.Exec("GenesisBuilder_build_config", genesisConfigJsonBytes)
+	if err != nil {
+		return fmt.Errorf("failed to build genesis config: %s", err)
+	}
+
+	rt.Stop()
 
 	return nil
 }
