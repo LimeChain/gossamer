@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"sync"
 
 	"github.com/ChainSafe/gossamer/dot/types"
@@ -58,7 +59,7 @@ type Config struct {
 	Storage        runtime.Storage
 	Keystore       *keystore.GlobalKeystore
 	LogLvl         log.Level
-	Role           common.NetworkRole
+	Role           network.NetworkRole
 	NodeStorage    runtime.NodeStorage
 	Network        runtime.BasicNetwork
 	Transaction    runtime.TransactionState
@@ -723,7 +724,7 @@ func NewInstance(code []byte, cfg Config) (instance *Instance, err error) {
 		Runtime:      rt,
 		Context: &runtime.Context{
 			Keystore:        cfg.Keystore,
-			Validator:       cfg.Role == common.AuthorityRole,
+			Validator:       cfg.Role == network.AuthorityRole,
 			NodeStorage:     cfg.NodeStorage,
 			Network:         cfg.Network,
 			Transaction:     cfg.Transaction,
@@ -815,7 +816,7 @@ func (i *Instance) Exec(function string, data []byte) ([]byte, error) {
 	}
 	wasmValue := values[0]
 	outputPtr, outputLength := splitPointerSize(wasmValue)
-	result, ok := memory.Read(outputPtr, outputLength)
+	result, ok := memory.Read(outputPtr, uint32(outputLength))
 	if !ok {
 		panic("read overflow")
 	}

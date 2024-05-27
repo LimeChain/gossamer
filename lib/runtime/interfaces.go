@@ -5,6 +5,7 @@ package runtime
 
 import (
 	"github.com/ChainSafe/gossamer/lib/common"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"github.com/ChainSafe/gossamer/lib/transaction"
 	"github.com/ChainSafe/gossamer/pkg/trie"
 )
@@ -69,7 +70,7 @@ type Storage interface {
 
 // BasicNetwork interface for functions used by runtime network state function
 type BasicNetwork interface {
-	NetworkState() common.NetworkState
+	NetworkState() network.NetworkState
 }
 
 // BasicStorage interface for functions used by runtime offchain workers

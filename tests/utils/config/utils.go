@@ -5,19 +5,19 @@ package config
 
 import (
 	cfg "github.com/ChainSafe/gossamer/config"
-	"github.com/ChainSafe/gossamer/lib/common"
+	"github.com/ChainSafe/gossamer/lib/network"
 )
 
 // ParseNetworkRole converts a common.NetworkRole to a string representation.
-func ParseNetworkRole(r common.NetworkRole) string {
+func ParseNetworkRole(r network.NetworkRole) string {
 	switch r {
-	case common.NoNetworkRole:
+	case network.NoNetworkRole:
 		return cfg.NoNetworkRole.String()
-	case common.FullNodeRole:
+	case network.FullNodeRole:
 		return cfg.FullNode.String()
-	case common.LightClientRole:
+	case network.LightClientRole:
 		return cfg.LightNode.String()
-	case common.AuthorityRole:
+	case network.AuthorityRole:
 		return cfg.AuthorityNode.String()
 	default:
 		return "Unknown"

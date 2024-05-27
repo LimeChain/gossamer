@@ -5,12 +5,12 @@ package wazero_runtime
 
 import (
 	"context"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/ChainSafe/gossamer/internal/log"
-	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/lib/keystore"
 	"github.com/ChainSafe/gossamer/lib/runtime"
 	"github.com/ChainSafe/gossamer/lib/runtime/mocks"
@@ -58,7 +58,7 @@ func NewTestInstance(t *testing.T, targetRuntime string, opts ...TestInstanceOpt
 		},
 		Network:     new(runtime.TestRuntimeNetwork),
 		Transaction: mocks.NewMockTransactionState(ctrl),
-		Role:        common.NoNetworkRole,
+		Role:        network.NoNetworkRole,
 	}
 
 	for _, opt := range opts {
@@ -92,7 +92,7 @@ func NewBenchInstanceWithTrie(b *testing.B, targetRuntime string, tt *inmemory_t
 
 	ctrl := gomock.NewController(b)
 
-	cfg := setupBenchConfig(b, ctrl, tt, DefaultTestLogLvl, common.NoNetworkRole)
+	cfg := setupBenchConfig(b, ctrl, tt, DefaultTestLogLvl, network.NoNetworkRole)
 	targetRuntime, err := runtime.GetRuntime(context.Background(), targetRuntime)
 	require.NoError(b, err)
 
@@ -105,7 +105,7 @@ func NewBenchInstanceWithTrie(b *testing.B, targetRuntime string, tt *inmemory_t
 	return r
 }
 
-func setupBenchConfig(b *testing.B, ctrl *gomock.Controller, tt *inmemory_trie.InMemoryTrie, lvl log.Level, role common.NetworkRole) Config {
+func setupBenchConfig(b *testing.B, ctrl *gomock.Controller, tt *inmemory_trie.InMemoryTrie, lvl log.Level, role network.NetworkRole) Config {
 	b.Helper()
 
 	s := storage.NewTrieState(tt)

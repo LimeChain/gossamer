@@ -59,7 +59,7 @@ func splitPointerSize(pointerSize uint64) (ptr uint32, size uint64) {
 // read will read from 64 bit pointer size and return a byte slice
 func read(m api.Module, pointerSize uint64) (data []byte) {
 	ptr, size := splitPointerSize(pointerSize)
-	data, ok := m.Memory().Read(ptr, size)
+	data, ok := m.Memory().Read(ptr, uint32(size))
 	if !ok {
 		panic("write overflow")
 	}
@@ -70,7 +70,7 @@ func read(m api.Module, pointerSize uint64) (data []byte) {
 // 64 bit pointer size.
 func write(m api.Module, allocator runtime.Allocator, data []byte) (pointerSize uint64, err error) {
 	size := uint32(len(data))
-	pointer, err := allocator.Allocate(m.Memory(), size)
+	pointer, err := allocator.Allocate(m.Memory(), uint64(size))
 	if err != nil {
 		return 0, fmt.Errorf("allocating: %w", err)
 	}

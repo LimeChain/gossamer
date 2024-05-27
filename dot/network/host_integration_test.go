@@ -7,6 +7,7 @@ package network
 
 import (
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"testing"
 	"time"
 
@@ -336,7 +337,7 @@ func TestStreamCloseMetadataCleanup(t *testing.T) {
 	)
 
 	testHandshake := &BlockAnnounceHandshake{
-		Roles:           common.AuthorityRole,
+		Roles:           network.AuthorityRole,
 		BestBlockNumber: bestBlockNumber,
 		BestBlockHash:   common.Hash{1},
 		GenesisHash:     nodeB.blockState.GenesisHash(),

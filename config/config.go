@@ -5,11 +5,11 @@ package config
 
 import (
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"path/filepath"
 	"time"
 
 	"github.com/ChainSafe/gossamer/dot/state/pruner"
-	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/lib/genesis"
 	"github.com/ChainSafe/gossamer/lib/os"
 	wazero "github.com/ChainSafe/gossamer/lib/runtime/wazero"
@@ -34,7 +34,7 @@ const (
 	defaultAccount = "alice"
 
 	// DefaultRole is the default node role
-	DefaultRole = common.AuthorityRole
+	DefaultRole = network.AuthorityRole
 	// DefaultWasmInterpreter is the default wasm interpreter
 	DefaultWasmInterpreter = wazero.Name
 
@@ -183,11 +183,11 @@ type NetworkConfig struct {
 
 // CoreConfig is to marshal/unmarshal toml core config vars
 type CoreConfig struct {
-	Role             common.NetworkRole `mapstructure:"role,omitempty"`
-	BabeAuthority    bool               `mapstructure:"babe-authority"`
-	GrandpaAuthority bool               `mapstructure:"grandpa-authority"`
-	WasmInterpreter  string             `mapstructure:"wasm-interpreter,omitempty"`
-	GrandpaInterval  time.Duration      `mapstructure:"grandpa-interval,omitempty"`
+	Role             network.NetworkRole `mapstructure:"role,omitempty"`
+	BabeAuthority    bool                `mapstructure:"babe-authority"`
+	GrandpaAuthority bool                `mapstructure:"grandpa-authority"`
+	WasmInterpreter  string              `mapstructure:"wasm-interpreter,omitempty"`
+	GrandpaInterval  time.Duration       `mapstructure:"grandpa-interval,omitempty"`
 }
 
 // StateConfig contains the configuration for the state.

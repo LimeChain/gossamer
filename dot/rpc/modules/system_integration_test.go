@@ -8,6 +8,7 @@ package modules
 import (
 	"errors"
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"math/big"
 	"os"
 	"testing"
@@ -34,12 +35,12 @@ import (
 )
 
 var (
-	testHealth = common.Health{
+	testHealth = network2.Health{
 		Peers:           0,
 		IsSyncing:       true,
 		ShouldHavePeers: true,
 	}
-	testPeers []common.PeerInfo
+	testPeers []network2.PeerInfo
 )
 
 func newNetworkService(t *testing.T) *network.Service {
@@ -443,7 +444,7 @@ func TestLocalListenAddresses(t *testing.T) {
 	ma, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/7001/p2p/12D3KooWCYyh5xoAc5oRyiGU4d9ktcqFQ23JjitNFR6bEcbw7YdN")
 	require.NoError(t, err)
 
-	mockedNetState := common.NetworkState{
+	mockedNetState := network2.NetworkState{
 		PeerID:     "fake-peer-id",
 		Multiaddrs: []multiaddr.Multiaddr{ma},
 	}
@@ -462,7 +463,7 @@ func TestLocalListenAddresses(t *testing.T) {
 	require.Len(t, res, 1)
 	require.Equal(t, res[0], ma.String())
 
-	mockNetAPI.EXPECT().NetworkState().Return(common.NetworkState{Multiaddrs: []multiaddr.Multiaddr{}})
+	mockNetAPI.EXPECT().NetworkState().Return(network2.NetworkState{Multiaddrs: []multiaddr.Multiaddr{}})
 	err = sysmodule.LocalListenAddresses(nil, nil, &res)
 	require.Error(t, err, "multiaddress list is empty")
 }
@@ -473,7 +474,7 @@ func TestLocalPeerId(t *testing.T) {
 	peerID := "12D3KooWBrwpqLE9Z23NEs59m2UHUs9sGYWenxjeCk489Xq7SG2h"
 	encoded := base58.Encode([]byte(peerID))
 
-	state := common.NetworkState{
+	state := network2.NetworkState{
 		PeerID: peerID,
 	}
 

@@ -5,6 +5,7 @@ package database
 
 import (
 	"bytes"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 )
 
 type table struct {
@@ -49,7 +50,7 @@ func (t *table) Flush() error {
 	return t.db.Flush()
 }
 
-func (t *table) NewBatch() Batch {
+func (t *table) NewBatch() interfaces.Batch {
 	return &tableBatch{
 		batch:  t.db.NewBatch(),
 		prefix: t.prefix,

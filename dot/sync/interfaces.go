@@ -5,6 +5,7 @@ package sync
 
 import (
 	"encoding/json"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"sync"
 
 	"github.com/ChainSafe/gossamer/dot/peerset"
@@ -72,7 +73,7 @@ type BlockImportHandler interface {
 // Network is the interface for the network
 type Network interface {
 	// Peers returns a list of currently connected peers
-	Peers() []common.PeerInfo
+	Peers() []network.PeerInfo
 
 	// ReportPeer reports peer based on the peer behaviour.
 	ReportPeer(change peerset.ReputationChange, p peer.ID)

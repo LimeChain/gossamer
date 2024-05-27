@@ -6,7 +6,7 @@ package network
 import (
 	cfg "github.com/ChainSafe/gossamer/config"
 	"github.com/ChainSafe/gossamer/dot/rpc/modules"
-	"github.com/ChainSafe/gossamer/lib/common"
+	"github.com/ChainSafe/gossamer/lib/network"
 	libutils "github.com/ChainSafe/gossamer/lib/utils"
 	"github.com/ChainSafe/gossamer/tests/utils"
 	"github.com/ChainSafe/gossamer/tests/utils/config"
@@ -29,7 +29,7 @@ func TestKadDHTNetworkDiscovery(t *testing.T) {
 	genesisPath := libutils.GetWestendDevRawGenesisPath(t)
 	con := config.Default()
 	con.ChainSpec = genesisPath
-	con.Core.Role = common.FullNodeRole
+	con.Core.Role = network.FullNodeRole
 	con.RPC.Modules = []string{"system", "author", "chain"}
 	con.Network.MinPeers = 1
 	con.Network.MaxPeers = 20

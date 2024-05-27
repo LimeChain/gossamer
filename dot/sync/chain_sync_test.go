@@ -6,6 +6,7 @@ package sync
 import (
 	"errors"
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -173,7 +174,7 @@ func Test_chainSync_onBlockAnnounce(t *testing.T) {
 				}
 
 				networkMock := NewMockNetwork(ctrl)
-				networkMock.EXPECT().Peers().Return([]common.PeerInfo{})
+				networkMock.EXPECT().Peers().Return([]network2.PeerInfo{})
 
 				requestMaker := NewMockRequestMaker(ctrl)
 				requestMaker.EXPECT().
@@ -280,7 +281,7 @@ func Test_chainSync_onBlockAnnounceHandshake_tipModeNeedToCatchup(t *testing.T) 
 		block2AnnounceHeader.Number, network.BootstrapRequestData)
 
 	networkMock := NewMockNetwork(ctrl)
-	networkMock.EXPECT().Peers().Return([]common.PeerInfo{}).
+	networkMock.EXPECT().Peers().Return([]network2.PeerInfo{}).
 		Times(2)
 	networkMock.EXPECT().AllConnectedPeersIDs().Return([]peer.ID{}).Times(2)
 
@@ -543,7 +544,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithOneWorker(t *testing.T) {
 	mockTelemetry := NewMockTelemetry(ctrl)
 
 	mockedBlockState.EXPECT().GetHighestFinalisedHeader().Return(types.NewEmptyHeader(), nil).Times(1)
-	mockedNetwork.EXPECT().Peers().Return([]common.PeerInfo{}).Times(1)
+	mockedNetwork.EXPECT().Peers().Return([]network2.PeerInfo{}).Times(1)
 
 	const announceBlock = false
 	// setup mocks for new synced blocks that doesn't exists in our local database
@@ -593,7 +594,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithTwoWorkers(t *testing.T) {
 
 	mockBlockState.EXPECT().GetHighestFinalisedHeader().Return(types.NewEmptyHeader(), nil).Times(1)
 	mockBlockState.EXPECT().IsPaused().Return(false)
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{}).Times(1)
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{}).Times(1)
 
 	// this test expects two workers responding each request with 128 blocks which means
 	// we should import 256 blocks in total
@@ -683,7 +684,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithOneWorkerFailing(t *testing.
 
 	mockBlockState.EXPECT().GetHighestFinalisedHeader().Return(types.NewEmptyHeader(), nil).Times(1)
 
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{}).Times(1)
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{}).Times(1)
 
 	// this test expects two workers responding each request with 128 blocks which means
 	// we should import 256 blocks in total
@@ -776,7 +777,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithProtocolNotSupported(t *test
 		trie.EmptyHash, 0, types.NewDigest())
 
 	mockNetwork := NewMockNetwork(ctrl)
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{})
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{})
 	mockRequestMaker := NewMockRequestMaker(ctrl)
 
 	mockBabeVerifier := NewMockBabeVerifier(ctrl)
@@ -881,7 +882,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithNilHeaderInResponse(t *testi
 		trie.EmptyHash, 0, types.NewDigest())
 
 	mockNetwork := NewMockNetwork(ctrl)
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{})
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{})
 	mockRequestMaker := NewMockRequestMaker(ctrl)
 
 	mockBabeVerifier := NewMockBabeVerifier(ctrl)
@@ -988,7 +989,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithResponseIsNotAChain(t *testi
 		trie.EmptyHash, 0, types.NewDigest())
 
 	mockNetwork := NewMockNetwork(ctrl)
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{})
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{})
 	mockRequestMaker := NewMockRequestMaker(ctrl)
 
 	mockBabeVerifier := NewMockBabeVerifier(ctrl)
@@ -1093,7 +1094,7 @@ func TestChainSync_BootstrapSync_SuccessfulSync_WithReceivedBadBlock(t *testing.
 		trie.EmptyHash, 0, types.NewDigest())
 
 	mockNetwork := NewMockNetwork(ctrl)
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{})
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{})
 	mockRequestMaker := NewMockRequestMaker(ctrl)
 
 	mockBabeVerifier := NewMockBabeVerifier(ctrl)
@@ -1218,7 +1219,7 @@ func TestChainSync_BootstrapSync_SucessfulSync_ReceivedPartialBlockData(t *testi
 		trie.EmptyHash, 0, types.NewDigest())
 
 	mockNetwork := NewMockNetwork(ctrl)
-	mockNetwork.EXPECT().Peers().Return([]common.PeerInfo{})
+	mockNetwork.EXPECT().Peers().Return([]network2.PeerInfo{})
 
 	mockRequestMaker := NewMockRequestMaker(ctrl)
 

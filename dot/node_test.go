@@ -6,6 +6,7 @@ package dot
 import (
 	"errors"
 	"fmt"
+	network2 "github.com/ChainSafe/gossamer/lib/network"
 	"os"
 	"path/filepath"
 	"testing"
@@ -197,7 +198,7 @@ func initKeystore(t *testing.T, cfg *cfg.Config) (
 	require.NoError(t, err)
 
 	// if authority node, should have at least 1 key in keystore
-	if cfg.Core.Role == common.AuthorityRole && (ks.Babe.Size() == 0 || ks.Gran.Size() == 0) {
+	if cfg.Core.Role == network2.AuthorityRole && (ks.Babe.Size() == 0 || ks.Gran.Size() == 0) {
 		return nil, ErrNoKeysProvided
 	}
 

@@ -6,6 +6,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ChainSafe/gossamer/lib/network"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -31,7 +32,6 @@ import (
 
 	cfg "github.com/ChainSafe/gossamer/config"
 
-	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/lib/keystore"
 	"github.com/ChainSafe/gossamer/lib/utils"
 
@@ -386,17 +386,17 @@ func copyChainSpec(source, destination string) error {
 
 // parseRole parses the role from the command line flags
 func parseRole() error {
-	var selectedRole common.NetworkRole
+	var selectedRole network.NetworkRole
 	if validator {
-		selectedRole = common.AuthorityRole
+		selectedRole = network.AuthorityRole
 	} else {
 		switch role {
 		case cfg.FullNode.String():
-			selectedRole = common.FullNodeRole
+			selectedRole = network.FullNodeRole
 		case cfg.LightNode.String():
-			selectedRole = common.LightClientRole
+			selectedRole = network.LightClientRole
 		case cfg.AuthorityNode.String():
-			selectedRole = common.AuthorityRole
+			selectedRole = network.AuthorityRole
 		default:
 			return fmt.Errorf("invalid role: %s", role)
 		}

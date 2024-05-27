@@ -6,6 +6,7 @@
 package network
 
 import (
+	"github.com/ChainSafe/gossamer/lib/network"
 	"testing"
 
 	"github.com/ChainSafe/gossamer/dot/types"
@@ -201,7 +202,7 @@ func TestValidateBlockAnnounceHandshake(t *testing.T) {
 	nodeA.notificationsProtocols[blockAnnounceMsgType].peersData.setInboundHandshakeData(testPeerID, &handshakeData{})
 
 	err := nodeA.validateBlockAnnounceHandshake(testPeerID, &BlockAnnounceHandshake{
-		Roles:           common.FullNodeRole,
+		Roles:           network.FullNodeRole,
 		BestBlockNumber: 100,
 		GenesisHash:     nodeA.blockState.GenesisHash(),
 	})

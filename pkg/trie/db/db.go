@@ -4,9 +4,9 @@ package db
 
 import (
 	"fmt"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 	"sync"
 
-	"github.com/ChainSafe/gossamer/internal/database"
 	"github.com/ChainSafe/gossamer/lib/common"
 )
 
@@ -19,7 +19,7 @@ type Writer interface {
 // NewBatcher creates a new database batch.
 type NewBatcher interface {
 	//TODO: to make this pkg standalone we need to get rid of this database dep
-	NewBatch() database.Batch
+	NewBatch() interfaces.Batch
 }
 
 type Database interface {

@@ -5,6 +5,7 @@ package rpc
 
 import (
 	"encoding/json"
+	"github.com/ChainSafe/gossamer/lib/network"
 
 	"github.com/ChainSafe/gossamer/dot/core"
 	"github.com/ChainSafe/gossamer/dot/state"
@@ -53,10 +54,10 @@ type BlockAPI interface {
 
 // NetworkAPI interface for network state methods
 type NetworkAPI interface {
-	Health() common.Health
-	NetworkState() common.NetworkState
-	Peers() []common.PeerInfo
-	NodeRoles() common.NetworkRole
+	Health() network.Health
+	NetworkState() network.NetworkState
+	Peers() []network.PeerInfo
+	NodeRoles() network.NetworkRole
 	Stop() error
 	Start() error
 	StartingBlock() int64

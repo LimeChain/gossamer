@@ -64,7 +64,8 @@ func encodeChildrenOpportunisticParallel(children []*Node, buffer io.Writer) (er
 		case parallelEncodingRateLimit <- struct{}{}:
 			// We have a goroutine available to encode
 			// the branch in parallel.
-			go runEncodeChild(child, i, resultsCh, parallelEncodingRateLimit)
+			// TODO(gosemble): remove goroutine
+			runEncodeChild(child, i, resultsCh, parallelEncodingRateLimit)
 		default:
 			// we reached the maximum parallel goroutines
 			// so encode this branch in this goroutine

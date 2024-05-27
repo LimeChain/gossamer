@@ -5,11 +5,12 @@ package database
 
 import (
 	"fmt"
+	"github.com/ChainSafe/gossamer/internal/database/interfaces"
 
 	"github.com/cockroachdb/pebble"
 )
 
-var _ Batch = (*pebbleBatch)(nil)
+var _ interfaces.Batch = (*pebbleBatch)(nil)
 
 type pebbleBatch struct {
 	batch *pebble.Batch

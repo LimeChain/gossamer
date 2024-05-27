@@ -10,6 +10,7 @@
 package mocks
 
 import (
+	"github.com/ChainSafe/gossamer/lib/network"
 	reflect "reflect"
 
 	core "github.com/ChainSafe/gossamer/dot/core"
@@ -471,10 +472,10 @@ func (mr *MockNetworkAPIMockRecorder) AddReservedPeers(arg0 ...any) *gomock.Call
 }
 
 // Health mocks base method.
-func (m *MockNetworkAPI) Health() common.Health {
+func (m *MockNetworkAPI) Health() network.Health {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Health")
-	ret0, _ := ret[0].(common.Health)
+	ret0, _ := ret[0].(network.Health)
 	return ret0
 }
 
@@ -485,10 +486,10 @@ func (mr *MockNetworkAPIMockRecorder) Health() *gomock.Call {
 }
 
 // NetworkState mocks base method.
-func (m *MockNetworkAPI) NetworkState() common.NetworkState {
+func (m *MockNetworkAPI) NetworkState() network.NetworkState {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NetworkState")
-	ret0, _ := ret[0].(common.NetworkState)
+	ret0, _ := ret[0].(network.NetworkState)
 	return ret0
 }
 
@@ -499,10 +500,10 @@ func (mr *MockNetworkAPIMockRecorder) NetworkState() *gomock.Call {
 }
 
 // NodeRoles mocks base method.
-func (m *MockNetworkAPI) NodeRoles() common.NetworkRole {
+func (m *MockNetworkAPI) NodeRoles() network.NetworkRole {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NodeRoles")
-	ret0, _ := ret[0].(common.NetworkRole)
+	ret0, _ := ret[0].(network.NetworkRole)
 	return ret0
 }
 
@@ -513,10 +514,10 @@ func (mr *MockNetworkAPIMockRecorder) NodeRoles() *gomock.Call {
 }
 
 // Peers mocks base method.
-func (m *MockNetworkAPI) Peers() []common.PeerInfo {
+func (m *MockNetworkAPI) Peers() []network.PeerInfo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Peers")
-	ret0, _ := ret[0].([]common.PeerInfo)
+	ret0, _ := ret[0].([]network.PeerInfo)
 	return ret0
 }
 
