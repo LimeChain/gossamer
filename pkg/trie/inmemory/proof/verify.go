@@ -37,7 +37,7 @@ func Verify(encodedProofNodes [][]byte, rootHash, key, value []byte) (err error)
 		return err
 	}
 
-	proofTrie, err := buildTrie(encodedProofNodes, rootHash, proofDB)
+	proofTrie, err := BuildTrie(encodedProofNodes, rootHash, proofDB)
 	if err != nil {
 		return fmt.Errorf("building trie from proof encoded nodes: %w", err)
 	}
@@ -63,7 +63,7 @@ var (
 )
 
 // buildTrie sets a partial trie based on the proof slice of encoded nodes.
-func buildTrie(encodedProofNodes [][]byte, rootHash []byte, db db.Database) (t trie.Trie, err error) {
+func BuildTrie(encodedProofNodes [][]byte, rootHash []byte, db db.Database) (t trie.Trie, err error) {
 	if len(encodedProofNodes) == 0 {
 		return nil, fmt.Errorf("%w: for Merkle root hash 0x%x",
 			ErrEmptyProof, rootHash)

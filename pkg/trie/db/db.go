@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ChainSafe/gossamer/internal/database/interfaces"
+	"sort"
 	"sync"
 
 	"github.com/ChainSafe/gossamer/lib/common"
@@ -110,8 +111,27 @@ func (mdb *MemoryDB) Put(key, value []byte) error {
 	return nil
 }
 
-func (mdb *MemoryDB) Print() {
+func (mdb *MemoryDB) Values() map[string]string {
+	result := make(map[string]string)
 	for k, v := range mdb.data {
-		fmt.Println(fmt.Printf("key [%s], value: [%s]", hex.EncodeToString(k[:]), hex.EncodeToString(v)))
+		result["0x"+hex.EncodeToString(k[:])] = "0x" + hex.EncodeToString(v)
+	}
+
+	return result
+}
+
+func (mdb *MemoryDB) Print() {
+	var keys []common.Hash
+	for k := range mdb.data {
+		keys = append(keys, k)
+	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].String() < keys[j].String()
+	})
+
+	for _, k := range keys {
+		value := mdb.data[k]
+		fmt.Println(fmt.Printf("key: [\"%s\"] - value: [\"%s\"]", hex.EncodeToString(k[:]), hex.EncodeToString(value)))
 	}
 }
