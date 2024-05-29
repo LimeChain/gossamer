@@ -21,7 +21,7 @@ import (
 )
 
 // DefaultTestLogLvl is the log level used for test runtime instances
-var DefaultTestLogLvl = log.Info
+var DefaultTestLogLvl = log.Trace
 
 type TestInstanceOption func(*Config)
 

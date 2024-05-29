@@ -816,7 +816,7 @@ func (i *Instance) Exec(function string, data []byte) ([]byte, error) {
 	}
 	wasmValue := values[0]
 	outputPtr, outputLength := splitPointerSize(wasmValue)
-	result, ok := memory.Read(outputPtr, uint32(outputLength))
+	result, ok := memory.Read(outputPtr, outputLength)
 	if !ok {
 		panic("read overflow")
 	}
