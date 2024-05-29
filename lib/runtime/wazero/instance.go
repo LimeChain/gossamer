@@ -645,6 +645,9 @@ func newRuntime(ctx context.Context,
 		}), []api.ValueType{i32, i64}, []api.ValueType{i32}).
 		Export("ext_crypto_ecdsa_generate_version_1").
 		NewFunctionBuilder().
+		WithFunc(ext_storage_proof_size_storage_proof_size_version_1).
+		Export("ext_storage_proof_size_storage_proof_size_version_1").
+		NewFunctionBuilder().
 		WithFunc(ext_benchmarking_current_time_version_1).
 		Export("ext_benchmarking_current_time_version_1").
 		NewFunctionBuilder().

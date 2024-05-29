@@ -961,8 +961,9 @@ func ext_trie_blake2_256_verify_proof_version_2(
 }
 
 func ext_misc_print_hex_version_1(_ context.Context, m api.Module, dataSpan uint64) {
-	data := read(m, dataSpan)
-	logger.Debugf("data: 0x%x", data)
+	// TODO: this function is failing
+	//data := read(m, dataSpan)
+	//logger.Debugf("data: 0x%x", data)
 }
 
 func ext_misc_print_num_version_1(_ context.Context, _ api.Module, data uint64) {
@@ -2387,6 +2388,21 @@ func ext_allocator_malloc_version_1(ctx context.Context, m api.Module, size uint
 	}
 
 	return res
+}
+
+func ext_storage_proof_size_storage_proof_size_version_1(ctx context.Context, m api.Module) uint64 {
+	rtCtx := ctx.Value(runtimeContextKey).(*runtime.Context)
+	if rtCtx == nil {
+		panic("nil runtime context")
+	}
+
+	logger.Debugf("call storage proof size")
+
+	value := uint64(math.MaxUint64)
+
+	scaleValue := scale.MustMarshal(value)
+
+	return mustWrite(m, rtCtx.Allocator, scaleValue)
 }
 
 func ext_benchmarking_current_time_version_1(ctx context.Context, m api.Module) int64 {
