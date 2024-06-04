@@ -323,7 +323,7 @@ func Test_buildTrie(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			trie, err := BuildTrie(testCase.encodedProofNodes, testCase.rootHash, testCase.db)
+			trie, err := BuildTrie(testCase.rootHash, testCase.db)
 
 			assert.ErrorIs(t, err, testCase.errWrapped)
 			if testCase.errWrapped != nil {

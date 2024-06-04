@@ -1413,7 +1413,7 @@ func buildTrie(t *testing.T) *inmemory_trie.InMemoryTrie {
 	assert.NoError(t, err)
 
 	// Build the trie
-	trie, err := proof.BuildTrie(storageProof, trieRootHash, database)
+	trie, err := proof.BuildTrie(trieRootHash, database)
 	assert.NoError(t, err)
 
 	return trie.(*inmemory_trie.InMemoryTrie)

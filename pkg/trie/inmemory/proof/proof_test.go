@@ -87,7 +87,7 @@ func TestParachainHeaderStateProof(t *testing.T) {
 	proofDB, err := db.NewMemoryDBFromProof(proof)
 	require.NoError(t, err)
 
-	trie, err := BuildTrie(proof, stateRoot, proofDB)
+	trie, err := BuildTrie(stateRoot, proofDB)
 	require.NoError(t, err)
 	value := trie.Get(encodeStorageKey)
 	require.Equal(t, expectedValue, value)
@@ -125,7 +125,7 @@ func TestTrieProof(t *testing.T) {
 
 	require.NoError(t, err)
 
-	trie, err := BuildTrie(proof, root, proofDB)
+	trie, err := BuildTrie(root, proofDB)
 	require.NoError(t, err)
 	value := trie.Get(key)
 
@@ -155,7 +155,7 @@ func Test_BuildTrie_RootHashTest(t *testing.T) {
 
 	require.NoError(t, err)
 
-	trie, err := BuildTrie(proof, root, proofDB)
+	trie, err := BuildTrie(root, proofDB)
 	require.NoError(t, err)
 
 	rootHash, err := trie.Hash()
