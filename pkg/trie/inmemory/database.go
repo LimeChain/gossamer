@@ -6,7 +6,6 @@ package inmemory
 import (
 	"bytes"
 	"fmt"
-
 	"github.com/ChainSafe/gossamer/lib/common"
 	"github.com/ChainSafe/gossamer/pkg/trie"
 	"github.com/ChainSafe/gossamer/pkg/trie/codec"
@@ -14,6 +13,56 @@ import (
 	"github.com/ChainSafe/gossamer/pkg/trie/node"
 	"github.com/ChainSafe/gossamer/pkg/trie/tracking"
 )
+
+// LoadWithDecoder has the same functionality as Load, takes an additional argument for node decoding.
+func (t *InMemoryTrie) LoadWithDecoder(db db.DBGetter, rootHash common.Hash, decodeFunc func(reader *bytes.Buffer) (n *node.Node, err error)) error {
+	if rootHash == trie.EmptyHash {
+		t.root = nil
+		return nil
+	}
+	rootHashBytes := rootHash.ToBytes()
+	encodedNode, err := db.Get(rootHashBytes)
+	if err != nil {
+		return fmt.Errorf("failed to find root key %s: %w", rootHash, err)
+	}
+
+	reader := bytes.NewBuffer(encodedNode)
+	root, err := decodeFunc(reader)
+	if err != nil {
+		return fmt.Errorf("cannot decode root node: %w", err)
+	}
+
+	err = loadStorageValue(db, root)
+	if err != nil {
+		return fmt.Errorf("while decoding storage value for root: %w", err)
+	}
+
+	t.root = root
+	t.root.MerkleValue = rootHashBytes
+
+	err = t.loadNodeWithDecoder(db, t.root, decodeFunc)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range t.GetKeysWithPrefix(ChildStorageKeyPrefix) {
+		value := t.Get(key)
+		childTrie := NewEmptyTrie()
+		rootHash := common.BytesToHash(value)
+		err := childTrie.Load(db, rootHash)
+		if err != nil {
+			return fmt.Errorf("failed to load child trie with root hash=%s: %w", rootHash, err)
+		}
+
+		hash, err := childTrie.Hash()
+		if err != nil {
+			return fmt.Errorf("cannot hash chilld trie at key 0x%x: %w", key, err)
+		}
+		t.childTries[hash] = childTrie
+	}
+
+	return nil
+}
 
 // Load reconstructs the trie from the database from the given root hash.
 // It is used when restarting the node to load the current state trie.
@@ -63,6 +112,74 @@ func (t *InMemoryTrie) Load(db db.DBGetter, rootHash common.Hash) error {
 		t.childTries[hash] = childTrie
 	}
 
+	return nil
+}
+
+// loadNodeWithDecoder has the same functionality as loadNode, takes an additional argument for node decoding.
+func (t *InMemoryTrie) loadNodeWithDecoder(db db.DBGetter, n *node.Node, decodeFunc func(reader *bytes.Buffer) (n *node.Node, err error)) error {
+	if n.Kind() != node.Branch {
+		return nil
+	}
+
+	branch := n
+	for i, child := range branch.Children {
+		if child == nil {
+			continue
+		}
+
+		merkleValue := child.MerkleValue
+
+		if len(merkleValue) < 32 {
+			// node has already been loaded inline
+			// just set its encoding
+			_, err := child.CalculateMerkleValue()
+			if err != nil {
+				return fmt.Errorf("merkle value: %w", err)
+			}
+			continue
+		}
+
+		nodeHash := merkleValue
+		encodedNode, err := db.Get(nodeHash)
+		if err != nil {
+			return fmt.Errorf("cannot find child node key 0x%x in database: %w", nodeHash, err)
+		}
+
+		// Node is not present in DB so we skip it
+		if encodedNode == nil {
+			continue
+		}
+
+		reader := bytes.NewBuffer(encodedNode)
+		decodedNode, err := decodeFunc(reader)
+		if err != nil {
+			return fmt.Errorf("decoding node with hash 0x%x: %w", nodeHash, err)
+		}
+
+		err = loadStorageValue(db, decodedNode)
+		if err != nil {
+			return fmt.Errorf("while decoding storage value: %w", err)
+		}
+
+		decodedNode.MerkleValue = nodeHash
+		branch.Children[i] = decodedNode
+
+		err = t.loadNodeWithDecoder(db, decodedNode, decodeFunc)
+		if err != nil {
+			return fmt.Errorf("loading child at index %d with node hash 0x%x: %w", i, nodeHash, err)
+		}
+
+		if decodedNode.Kind() == node.Branch {
+			// Note 1: the node is fully loaded with all its descendants
+			// count only after the database load above.
+			// Note 2: direct child node is already counted as descendant
+			// when it was read as a leaf with hash only in decodeBranch,
+			// so we only add the descendants of the child branch to the
+			// current branch.
+			childBranchDescendants := decodedNode.Descendants
+			branch.Descendants += childBranchDescendants
+		}
+	}
 	return nil
 }
 
