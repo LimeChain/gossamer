@@ -124,8 +124,6 @@ func ext_crypto_ed25519_generate_version_1(
 	}
 	seedBytes := read(m, seedSpan)
 
-	fmt.Println("seed", seedBytes)
-
 	var seed *[]byte
 	err := scale.Unmarshal(seedBytes, &seed)
 	if err != nil {
@@ -511,8 +509,6 @@ func ext_crypto_sr25519_generate_version_1(
 	}
 
 	seedBytes := read(m, seedSpan)
-
-	fmt.Println("seed", seedBytes)
 
 	var seed *[]byte
 	err := scale.Unmarshal(seedBytes, &seed)
@@ -1567,7 +1563,6 @@ func ext_hashing_twox_256_version_1(ctx context.Context, m api.Module, dataSpan 
 		logger.Errorf("failed to allocate: %s", err)
 		return 0
 	}
-	fmt.Println(fmt.Sprintf("TWOX256 [KEY]: [%s], [HASH]: [%x]", data, hash))
 
 	ptr, _ := splitPointerSize(out)
 	return ptr
@@ -1597,8 +1592,6 @@ func ext_hashing_twox_128_version_1(ctx context.Context, m api.Module, dataSpan 
 		return 0
 	}
 
-	fmt.Println(fmt.Sprintf("TWOX128 [KEY]: [%s], [HASH]: [%x]", data, hash))
-
 	ptr, _ := splitPointerSize(out)
 	return ptr
 }
@@ -1626,7 +1619,6 @@ func ext_hashing_twox_64_version_1(ctx context.Context, m api.Module, dataSpan u
 		logger.Errorf("failed to allocate: %s", err)
 		return 0
 	}
-	fmt.Println(fmt.Sprintf("TWOX64 [KEY]: [%s], [HASH]: [%x]", data, hash))
 	ptr, _ := splitPointerSize(out)
 	return ptr
 }
@@ -2206,7 +2198,6 @@ func ext_storage_get_version_1(ctx context.Context, m api.Module, keySpan uint64
 	} else {
 		encodedOption = noneEncoded
 	}
-	fmt.Println(fmt.Sprintf("GET [KEY]: [%x], [VALUE]: [%x]", key, value))
 
 	return mustWrite(m, rtCtx.Allocator, encodedOption)
 }
@@ -2338,7 +2329,6 @@ func ext_storage_set_version_1(ctx context.Context, m api.Module, keySpan, value
 		"key 0x%x has value 0x%x",
 		key, value)
 	err := storage.Put(key, cp)
-	fmt.Println(fmt.Sprintf("SET [KEY]: [%x], [VALUE]: [%x]", key, value))
 	if err != nil {
 		panic(err)
 	}

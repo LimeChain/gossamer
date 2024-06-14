@@ -5,10 +5,11 @@ package wazero_runtime
 
 import (
 	"context"
-	"github.com/ChainSafe/gossamer/lib/network"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/ChainSafe/gossamer/lib/network"
 
 	"github.com/ChainSafe/gossamer/internal/log"
 	"github.com/ChainSafe/gossamer/lib/keystore"
@@ -21,7 +22,7 @@ import (
 )
 
 // DefaultTestLogLvl is the log level used for test runtime instances
-var DefaultTestLogLvl = log.Trace
+var DefaultTestLogLvl = log.Info
 
 type TestInstanceOption func(*Config)
 
